@@ -1,8 +1,10 @@
 # Scholarr
 
+[![Version badge](https://img.shields.io/badge/Version-v.0.1.0.alpha-orange.svg)](https://shields.io/)
+
 An online hub for **remote learning**.
 
-[![Version badge](https://img.shields.io/badge/Version-v.0.1.0-aplpha-orange.svg)](https://shields.io/)
+
 
 ## Technology Used
 
