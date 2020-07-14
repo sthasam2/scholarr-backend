@@ -1,8 +1,18 @@
 # Scholarr
 
-[![Version badge](https://img.shields.io/badge/Version-v.0.1.0.alpha-green.svg)](https://shields.io/)
+[![Version badge](https://img.shields.io/badge/Version-v.0.2.0-green.svg)](https://shields.io/)
 
 An online hub for **remote learning**.
+
+## Changelogs
+
+-   ### v.0.2.0
+
+    1. Added Authentication backend
+    2. Modified directory structure
+
+-   ### v.0.1.0.alpha
+    1. Created basic MERN boilerplate
 
 ## Technology Used
 
@@ -26,11 +36,10 @@ The project is created using the MERN-stack.
 
 ## Guidelines
 
-- Install all dependencies before running
+-   Install all dependencies before running
 
     **Script**: `npm install`
 
-- To run server
+-   To run server
 
     **Script**: `npm run server`
-
