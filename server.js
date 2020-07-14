@@ -30,7 +30,7 @@ app.use(morgan("dev")); // Logger for requests
 app.use(cors()); // Cross origin enabler
 
 /** Module for API route handling. */
-const apiRouter = require("./routes/api");
+const apiRouter = require("./api/routes/api");
 app.use("/api", apiRouter); // (@param1: route, @param2 handler)
 
 // SERVER IMPLEMENTATIONS --------------------------------------------------------------------------------------------------------------------
