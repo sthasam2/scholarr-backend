@@ -7,7 +7,11 @@ const User = require("../models/User");
 const Token = require("../models/Token");
 
 // middleware
-const { registerValidation, loginValidation } = require("../middleware/validation");
+const {
+	registerValidation,
+	loginValidation,
+	emailValidation,
+} = require("../middleware/validation");
 const { confirmEmailSender } = require("../middleware/emailSender");
 
 // exports
@@ -17,8 +21,9 @@ module.exports.user_get = (req, res) => {
 	res.send("User page");
 };
 
+//
+//
 // register GET ------------------------------------------------------------------
-
 /** Controls register GET requests. */
 module.exports.register_get = (req, res) => {
 	res.send(
@@ -35,9 +40,10 @@ module.exports.register_get = (req, res) => {
 	);
 };
 
+//
+//
 // register POST -----------------------------------------------------------------
-
-/** Controls register POST requests */
+/** Controls register POST requests. */
 module.exports.register_post = async (req, res) => {
 	// First validate req.body data
 	const { error } = registerValidation(req.body);
@@ -105,11 +111,13 @@ module.exports.register_post = async (req, res) => {
 	});
 
 	// send email
-	confirmEmailSender(req, res, token);
+	confirmEmailSender(req, res, user, token);
 };
 
+//
+//
 // login GET ------------------------------------------------------------------
-/** Controls login GET requests */
+/** Controls login GET requests. */
 module.exports.login_get = (req, res) => {
 	res.send(
 		`<div>
@@ -130,33 +138,50 @@ module.exports.login_get = (req, res) => {
 	);
 };
 
+//
+//
 // login POST -------------------------------------------------------------------
-/** Controls login POST requests */
+/** Controls login POST requests. */
 module.exports.login_post = async (req, res) => {
 	//Validate login req.body data
 	const { error } = loginValidation(req.body);
 	if (error) res.status(400).send(error.details[0].message);
 
-	//check if email exists
-	const user = await User.findOne({ email: req.body.email });
-	if (!user) res.status(400).send("Email not found");
+	//check email exists
+	await User.findOne({ email: req.body.email }, async (error, queried_user) => {
+		if (error) return res.status(400).send(error);
 
-	// Check password
-	const validPass = await bcrypt.compare(req.body.password, user.password);
-	if (!validPass) res.status(400).send("Password is wrong");
+		if (!queried_user)
+			return res
+				.status(400)
+				.send({ error: { type: "Non-existence", message: "Email not found!" } });
 
-	// web token
-	const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-	res.header(`auth-token`, token).send(token); // VVI token header for all privated routes
-	//NOTE: BETTER WAY FOR SENDING TOKENS
+		// email verificatoin
+		if (!queried_user.isVerified)
+			return res
+				.status(401)
+				.send({ error: { type: "Access denied", message: "Email is not verified!" } });
 
-	//after email and password check
-	res.status(201).send({ message: "Successfully, Logged in!" });
+		// Check password
+		const validPass = await bcrypt.compare(req.body.password, queried_user.password);
+		if (!validPass)
+			res.status(400).send({
+				error: { type: "Authentication failure", message: "Wrong Password." },
+			});
+
+		// web token
+		const token = jwt.sign({ _id: queried_user._id }, process.env.TOKEN_SECRET);
+		res.header(`auth-token`, token).status(202).send({
+			status: "Success",
+			message: "Login Successful",
+			token: token,
+		});
+	});
 };
 
-/**
- *  confirmation handler GET ---------------------------------------------------------
- */
+//
+//
+/** confirmation handler GET */
 module.exports.email_confirmation_handler = async (req, res) => {
 	// const email = req.body.email;
 	const token = req.params.token; //retrieve token from url
@@ -209,4 +234,63 @@ module.exports.email_confirmation_handler = async (req, res) => {
 	});
 };
 
-// Reset password
+//
+//
+// Resend Confirmation POST -------------------------------------------------------------------
+/** Sends the email confirmation again */
+module.exports.resend_email_confirmation = async (req, res) => {
+	// First validate req.body data
+	const { error } = emailValidation(req.body);
+	if (error) return res.status(400).send(error.details[0].message);
+
+	// Check unique email
+	await User.findOne({ email: req.body.email }, async (err, queried_user) => {
+		//callback
+		if (!queried_user)
+			return res.status(400).send({
+				error: {
+					type: "Non-existence",
+					message: `Email: '${req.body.email}' is not associated with any accounts.`,
+				},
+			});
+
+		// token generator
+		const token_key =
+			Math.random().toString(36).substring(2, 15) +
+			Math.random().toString(36).substring(2, 15);
+
+		// token save to database
+		const token = new Token({
+			_userId: queried_user.id,
+			token: token_key,
+		});
+		await token.save((error) => {
+			if (error) {
+				return res.status(400).send({ error: err });
+			}
+		});
+
+		// send email
+		confirmEmailSender(req, res, queried_user, token);
+
+		return res.status(200).send({
+			success: { type: "Request successful", message: "Email confirmation resent" },
+		});
+	});
+};
+
+//
+//
+// Password reset email POST --------------------------------------------------
+/** Sends email for password reset */
+module.exports.password_reset_email = (req, res) => {
+	return res.send("in progress");
+};
+
+//
+//
+// Password resetter POST --------------------------------------------------
+/** Resets password */
+module.exports.password_reset_handler = (req, res) => {
+	return res.send("in progress");
+};

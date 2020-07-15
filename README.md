@@ -6,6 +6,11 @@ An online hub for **remote learning**.
 
 ## Changelogs
 
+-   ### v.0.2.1
+
+    1. Added resend email verification confirmation mail
+    2. Minor bug fixes
+
 -   ### v.0.2.0
 
     1. Added Authentication backend

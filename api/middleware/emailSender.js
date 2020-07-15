@@ -13,9 +13,10 @@ const transporter = nodemailer.createTransport({
 /** Email sender nodemailer module
  * @param1 req - request made
  * @param2 res - response to send
- * @param3 token - token model object after registration
+ * @param3 user - user model object
+ * @param4 token - token model object
  */
-module.exports.confirmEmailSender = async (req, res, token) => {
+module.exports.confirmEmailSender = async (req, res, user, token) => {
 	// verify connection configuration
 	transporter.verify(function (error, success) {
 		if (error) {
@@ -31,7 +32,7 @@ module.exports.confirmEmailSender = async (req, res, token) => {
 	const message = {
 		from: "no-reply@scholarr.com.np",
 		to: req.body.email,
-		subject: "Email Confirmation",
+		subject: "[Scholarr] Email Confirmation",
 		html: `<html>
         <head>
             <style>
@@ -74,12 +75,12 @@ module.exports.confirmEmailSender = async (req, res, token) => {
                 <div class="custom">
                     <h1 class="custom">Confirm your e-mail address</h1>
                     <p class="custom">
-                        Dear <strong>${req.body.username}</strong>,<br />
-                        Please cofirm <strong>'$(req.body.email)'</strong> as your email by following clicking the
+                        Dear <strong>${user.username}</strong>,<br />
+                        Please confirm <strong>'${user.email}'</strong> as your email by clicking the
                         following link:<br />
                         <a href="http:\/\/${req.headers.host}\/\/api\/user\/confirmation\/${token.token}">
                             <strong>Click here</strong></a
-                        >. <br />
+                        ><br />
                         Or, copy the following link into your browser:<br />
                         <strong>
                             http:\/\/${req.headers.host}\/api\/user\/confirmation\/${token.token}

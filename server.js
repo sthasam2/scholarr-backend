@@ -18,9 +18,9 @@ dotenv.config();
 
 /** MongoDB connenction using mongoose*/
 mongoose.connect(
-    process.env.DB_CONNECT, // database connect key
-    { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }, // options
-    () => console.log("Connected to MongoDB") // callback
+	process.env.DB_CONNECT, // database connect key
+	{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }, // options
+	() => console.log("Connected to MongoDB") // callback
 );
 
 /** App instance created using express. */
@@ -30,7 +30,7 @@ app.use(morgan("dev")); // Logger for requests
 app.use(cors()); // Cross origin enabler
 
 /** Module for API route handling. */
-const apiRouter = require("./api/routes/api");
+const apiRouter = require("./api/routes/apiRoutes");
 app.use("/api", apiRouter); // (@param1: route, @param2 handler)
 
 // SERVER IMPLEMENTATIONS --------------------------------------------------------------------------------------------------------------------
