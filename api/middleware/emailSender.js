@@ -2,12 +2,12 @@ require("dotenv").config();
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-	host: "smtp.gmail.com",
-	port: 587,
-	auth: {
-		user: process.env.GMAIL_USER,
-		pass: process.env.GMAIL_PASS,
-	},
+  host: "smtp.gmail.com",
+  port: 587,
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
 });
 
 /** Email sender nodemailer module
@@ -17,23 +17,23 @@ const transporter = nodemailer.createTransport({
  * @param4 token - token model object
  */
 module.exports.confirmEmailSender = async (req, res, user, token) => {
-	// verify connection configuration
-	transporter.verify(function (error, success) {
-		if (error) {
-			res.send({ error: error });
-		} else {
-			console.log("Server is ready to send messages");
-		}
-	});
+  // verify connection configuration
+  transporter.verify(function (error, success) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Server is ready to send messages");
+    }
+  });
 
-	console.log(token.token);
+  console.log(user);
 
-	// Message content
-	const message = {
-		from: "no-reply@scholarr.com.np",
-		to: req.body.email,
-		subject: "[Scholarr] Email Confirmation",
-		html: `<html>
+  // Message content
+  const message = {
+    from: process.env.GMAIL_USER,
+    to: req.body.email,
+    subject: "[Scholarr] Email Confirmation",
+    html: `<html>
         <head>
             <style>
                 p.custom {
@@ -97,13 +97,13 @@ module.exports.confirmEmailSender = async (req, res, user, token) => {
         </body>
     </html>
         `,
-	};
+  };
 
-	// Send Message
-	transporter.sendMail(message, function (err) {
-		if (err) {
-			return console.log({ msg: err.message });
-		}
-		console.log("The verification email has been sent");
-	});
+  // Send Message
+  transporter.sendMail(message, function (err) {
+    if (err) {
+      return console.log({ msg: err.message });
+    }
+    console.log("The verification email has been sent");
+  });
 };

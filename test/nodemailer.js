@@ -2,28 +2,31 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 let transporter = nodemailer.createTransport({
-	host: "smtp.gmail.com",
-	port: 587,
-	auth: {
-		user: process.env.GMAIL_USER,
-		pass: process.env.GMAIL_PASS,
-	},
+  host: "smtp.gmail.com",
+  port: 587,
+  auth: {
+    type: "login",
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
 });
+
+console.log(token);
 
 // verify connection configuration
 transporter.verify(function (error, success) {
-	if (error) {
-		console.log(error);
-	} else {
-		console.log("Server is ready to take our messages");
-	}
+  if (error) {
+    console.log("here = " + error);
+  } else {
+    console.log("Server is ready to take our messages");
+  }
 });
 
 let message = {
-	from: process.env.GMAIL_USER,
-	to: "sthasuraj2@gmail.com",
-	subject: "TEST HTML6",
-	html: ` <html>
+  from: process.env.GMAIL_USER,
+  to: "sthasuraj2@gmail.com",
+  subject: "TEST HTML6",
+  html: ` <html>
 	            <head>
                 <style>
                     p.custom {
@@ -90,8 +93,8 @@ let message = {
 };
 
 transporter.sendMail(message, function (err) {
-	if (err) {
-		return console.log({ msg: err.message });
-	}
-	console.log("An email has been sent");
+  if (err) {
+    return console.log({ msg: err.message });
+  }
+  console.log("An email has been sent");
 });
