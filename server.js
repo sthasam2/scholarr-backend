@@ -18,9 +18,9 @@ dotenv.config();
 
 /** MongoDB connenction using mongoose*/
 mongoose.connect(
-  process.env.DB_CONNECT, // database connect key
-  { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }, // options
-  () => console.log("Connected to MongoDB") // callback
+	process.env.DB_CONNECT, // database connect key
+	{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }, // options
+	() => console.log("Connected to MongoDB") // callback
 );
 
 /** App instance created using express. */
@@ -38,4 +38,4 @@ const PORT = process.env.PORT || process.argv[2] || 4000;
 // Value is either 1. from env variable, 2. from runserver script i.e. nodemon[0] index.js[1] 8888[2] or, 3.hardcoded 4000
 
 /** Server listener */
-app.listen(PORT, () => console.log(`Server running at ${PORT}.`));
+app.listen(PORT, "0.0.0.0", () => console.log(`Server running at ${PORT}.`));

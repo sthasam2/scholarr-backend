@@ -1,7 +1,15 @@
 const mongoose = require("mongoose");
 const User = require("./User");
 const { string } = require("joi");
-
+//
+//
+/** Token model
+ *
+ * @property1 _id
+ * @property2 _userId
+ * @property3 token
+ * @property4 createdAt
+ */
 const tokenSchema = mongoose.Schema({
 	_userId: {
 		type: mongoose.Schema.Types.ObjectId,
@@ -9,6 +17,10 @@ const tokenSchema = mongoose.Schema({
 		ref: User,
 	},
 	token: {
+		type: String,
+		required: true,
+	},
+	usage: {
 		type: String,
 		required: true,
 	},
