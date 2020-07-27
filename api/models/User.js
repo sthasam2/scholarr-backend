@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const { boolean } = require("joi");
 
+//
+//
 // USER SCHEMA
-
 const userSchema = mongoose.Schema({
 	username: {
 		type: String,
@@ -33,6 +33,4 @@ const userSchema = mongoose.Schema({
 	},
 });
 
-const User = mongoose.model("User", userSchema); // creates a new model based on userSchema named as User
-
-module.exports = User; // exporting the User model
+module.exports = mongoose.model("User", userSchema); // creates a new model based on userSchema named as User

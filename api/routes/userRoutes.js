@@ -1,3 +1,10 @@
+/**
+ * User Authentication routes
+ *
+ * contailns all routes extended by the userRouter
+ * root url: `{host_url}/api/user`
+ */
+
 /** `api/user` router */
 const userRouter = require("express").Router();
 
@@ -33,9 +40,19 @@ userRouter.post("/login", userController.login_post);
 //
 //
 // PASSWORD RESETS
-userRouter.post("/reset_password_email", userController.password_reset_email_post);
-userRouter.get("/reset_password/:token", userController.password_reset_get);
-userRouter.post("/reset_password/confirm/:username", userController.password_reset_handler_post);
+userRouter.post("/reset_password_email", userController.reset_password_email_post);
+userRouter.get("/reset_password/:token", userController.reset_password_get);
+userRouter.patch("/reset_password/confirm/:username", userController.reset_password_handler_patch);
+
+//
+//
+// DELETE ACCOUNT
+userRouter.post("/delete_account_email", userController.delete_account_email_post);
+userRouter.get("/delete_account/:token", userController.delete_account_get);
+userRouter.delete(
+	"/delete_account/confirm/:username",
+	userController.delete_account_handler_delete
+);
 
 //
 //

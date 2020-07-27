@@ -1,16 +1,21 @@
 # Scholarr
 
-[![Version badge](https://img.shields.io/badge/Version-v.0.2.3-green.svg)](https://shields.io/)
+[![Version badge](https://img.shields.io/badge/Version-v.0.2.4-green.svg)](https://shields.io/)
 
 An online hub for **remote learning**.
 
 ## Changelogs
 
+-   ### v.0.2.4
+
+1. Added Delete Account feature
+2. Minor Bug fixes
+
 -   ### v.0.2.3
 
-    1. Implementation of try catch error handling
-    2. Added Reset password feature
-    3. Minor Bug fixes
+1. Implementation of try catch error handling
+2. Added Reset password feature
+3. Minor Bug fixes
 
 -   ### v.0.2.2
 

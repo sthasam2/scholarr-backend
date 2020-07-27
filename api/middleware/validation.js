@@ -35,3 +35,15 @@ module.exports.emailValidation = (data) => {
 
 	return Joi.validate(data, schema);
 };
+
+//
+//
+// delete account
+module.exports.deleteAccountValidation = (data) => {
+	const schema = {
+		email: Joi.string().min(6).email(),
+		password: Joi.string().min(8).required(),
+	};
+
+	return Joi.validate(data, schema);
+};

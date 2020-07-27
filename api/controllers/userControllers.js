@@ -1,3 +1,23 @@
+/**
+ * *User Controllers
+ *
+ * *Contails all modules for controlling activities for routes defined in `routes/userRoutes.js`
+ * @available_controllers -
+ * 1. user_get
+ * 2. register_get
+ * 3. register_post
+ * 4. login_get
+ * 5. login_post
+ * 6. email_confirmation_handler_get
+ * 7. resend_email_confirmation_post
+ * 8. password_reset_email_post
+ * 9. password_reset_get
+ * 10. password_reset_handler_post
+ * 11. delete_account_email_post
+ * 12. delete_account_get
+ * 13. delete_account_handler_post
+ */
+
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -7,12 +27,20 @@ const User = require("../models/User");
 const Token = require("../models/Token");
 
 // middleware
+
+//validation
 const {
 	registerValidation,
 	loginValidation,
 	emailValidation,
+	deleteAccountValidation,
 } = require("../middleware/validation");
-const { confirmEmailSender, resetPasswordEmailSender } = require("../middleware/emailSender");
+// emailer
+const {
+	confirmEmailSender,
+	resetPasswordEmailSender,
+	deleteAccountEmailSender,
+} = require("../middleware/emailSender");
 
 // modules
 
@@ -24,9 +52,10 @@ module.exports.user_get = (req, res) => {
 };
 
 //
+//* REGISTRATION ----------------------------
 //
-// register GET ------------------------------------------------------------------
-/** Controls register GET requests. */
+
+/** //* Controls REGISTER GET requests. */
 module.exports.register_get = (req, res) => {
 	res.send(
 		`<h1>Register Page</h1> 
@@ -42,17 +71,9 @@ module.exports.register_get = (req, res) => {
 	);
 };
 
-//
-//
-// register POST -----------------------------------------------------------------
-/** Controls register POST requests.
+/** //* Controls REGISTER POST requests.
  *
- * POST request structure
- * {
- * 		username,
- * 		email,
- * 		password,
- * }
+ * POST body: { username: , email: , password: }
  */
 module.exports.register_post = async (req, res) => {
 	try {
@@ -110,7 +131,7 @@ module.exports.register_post = async (req, res) => {
 		// console.log("\nsavedToken:" + savedToken);
 
 		// send email
-		const messageResponse = await confirmEmailSender(req, res, user, token);
+		const messageResponse = await confirmEmailSender(req, user, token);
 		if (messageResponse) throw messageResponse;
 
 		res.status(201).json({
@@ -124,9 +145,10 @@ module.exports.register_post = async (req, res) => {
 };
 
 //
+//* LOGIN -------------------------------------
 //
-// login GET ------------------------------------------------------------------
-/** Controls login GET requests. */
+
+/** //* Controls LOGIN GET request. */
 module.exports.login_get = (req, res) => {
 	res.send(
 		`<div>
@@ -147,16 +169,9 @@ module.exports.login_get = (req, res) => {
 	);
 };
 
-//
-//
-// login POST -------------------------------------------------------------------
-/** Controls login POST requests.
+/** //* Controls LOGIN POST request.
  *
- * POST Request structure
- * {
- * 		email,
- * 		password,
- * }
+ * POST body: { email: , password: }
  */
 module.exports.login_post = async (req, res) => {
 	try {
@@ -202,8 +217,10 @@ module.exports.login_post = async (req, res) => {
 };
 
 //
+//* CONFIRMATION -------------------------------
 //
-/** confirmation handler GET */
+
+/** //* Confirmation handler GET */
 module.exports.email_confirmation_handler_get = async (req, res) => {
 	try {
 		const urlToken = req.params.token; //retrieve token from url
@@ -232,25 +249,22 @@ module.exports.email_confirmation_handler_get = async (req, res) => {
 			};
 
 		// Verify the user
-		await User.updateOne({ _id: userExists._id }, { $set: { isEmailVerified: true } });
+		const updatedUser = await User.updateOne(
+			{ _id: userExists._id },
+			{ $set: { isEmailVerified: true } }
+		);
 
 		res.status(200).send({
-			message: `Your email: ${updatedUser.email} has been verified. Now you can use this to login`,
+			message: `Your email: ${userExists.email} has been verified. Now you can use this to login`,
 		});
 	} catch (error) {
 		res.status(400).json(error);
 	}
 };
 
-//
-//
-// Resend Confirmation POST -------------------------------------------------------------------
-/** Sends the email confirmation again
+/** //* Sends the email confirmation email again
  *
- * POST request structure
- * {
- * 		email ,
- * }
+ * POST body: { email: , password: }
  */
 module.exports.resend_email_confirmation_post = async (req, res) => {
 	// First validate req.body data
@@ -284,7 +298,7 @@ module.exports.resend_email_confirmation_post = async (req, res) => {
 		});
 
 		// send email
-		const mailResponse = await confirmEmailSender(req, res, userFound, newToken);
+		const mailResponse = await confirmEmailSender(req, userFound, newToken);
 		if (mailResponse) throw mailResponse;
 
 		return res.status(200).send({
@@ -299,16 +313,14 @@ module.exports.resend_email_confirmation_post = async (req, res) => {
 };
 
 //
+// //* RESET PASSWORD --------------------------
 //
-// Password reset email POST --------------------------------------------------
-/** Sends email for password reset
+
+/** //* Sends email for password reset
  *
- * POST Request Structure
- * {
- * 		email,
- * }
+ * POST body: { email: }
  */
-module.exports.password_reset_email_post = async (req, res) => {
+module.exports.reset_password_email_post = async (req, res) => {
 	// First validate req.body data
 	try {
 		const { error } = emailValidation(req.body);
@@ -334,7 +346,7 @@ module.exports.password_reset_email_post = async (req, res) => {
 		});
 		const newToken = await token.save();
 		// send email
-		const mailResponse = await resetPasswordEmailSender(req, res, userFound, newToken);
+		const mailResponse = await resetPasswordEmailSender(req, userFound, newToken);
 		if (mailResponse) throw mailResponse;
 
 		// after everything done successfully
@@ -349,14 +361,11 @@ module.exports.password_reset_email_post = async (req, res) => {
 	}
 };
 
-//
-//
-// Password resetter GET --------------------------------------------------
-/** A form for resetting password. Acts as a middleware
+/** //* GET request for token verification for password reset
  *
- * @returns Token object
+ * @returns Token, User
  */
-module.exports.password_reset_get = async (req, res) => {
+module.exports.reset_password_get = async (req, res) => {
 	try {
 		const urlToken = req.params.token;
 		console.log(urlToken);
@@ -398,19 +407,11 @@ module.exports.password_reset_get = async (req, res) => {
 	}
 };
 
-//
-//
-// Password resetter POST --------------------------------------------------
-/** Resets password
+/** //* Reset password handler
  *
- * POST request structure
- * {
- * 		_userId: ,
- * 		token: ,
- * 		password: ,
- * }
+ * PATCH body: { _userId: , token: , password: }
  */
-module.exports.password_reset_handler_post = async (req, res) => {
+module.exports.reset_password_handler_patch = async (req, res) => {
 	// return res.send("in progress");
 	try {
 		const userFound = await User.findOne({ _id: req.body._userId });
@@ -438,12 +439,16 @@ module.exports.password_reset_handler_post = async (req, res) => {
 		const salt = await bcrypt.genSalt(10);
 		const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
-		await User.updateOne({
-			_id: userFound._id,
-			$set: {
-				password: hashedPassword,
+		await User.updateOne(
+			{
+				_id: userFound._id,
 			},
-		});
+			{
+				$set: {
+					password: hashedPassword,
+				},
+			}
+		);
 
 		res.status(200).json({
 			success: {
@@ -452,6 +457,151 @@ module.exports.password_reset_handler_post = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		return res.stat(400).json(error);
+		return res.status(400).json(error);
+	}
+};
+
+//
+// //* ACCOUNT DELETEION ---------------------------
+//
+
+/** //* Sends email for account delete
+ *
+ * POST body: { email: , password: }
+ */
+module.exports.delete_account_email_post = async (req, res) => {
+	try {
+		// console.log(req.body);
+		const { error } = deleteAccountValidation(req.body);
+		if (error) throw error;
+
+		const userFound = await User.findOne({ email: req.body.email });
+		console.log(`\n\n${userFound}`);
+		if (!userFound)
+			throw {
+				type: "Non-existence",
+				message: `Email: '${req.body.email}' is not associated with any accounts.`,
+			};
+
+		const validPass = await bcrypt.compare(req.body.password, userFound.password);
+		console.log(`\n\n${validPass}`);
+		if (!validPass)
+			throw {
+				error: { type: "Authentication failure", message: "Wrong Password." },
+			};
+
+		const tokenKey =
+			Math.random().toString(36).substring(2, 15) +
+			Math.random().toString(36).substring(2, 15);
+		const token = new Token({
+			_userId: userFound.id,
+			token: tokenKey,
+			usage: "Account Deletion",
+		});
+		const newToken = await token.save();
+		console.log(newToken);
+
+		const mailResponse = await deleteAccountEmailSender(req, userFound, newToken);
+		if (mailResponse) throw mailResponse;
+
+		return res.status(200).send({
+			success: {
+				type: "Request successful",
+				message: "Delete Account email confirmation sent",
+			},
+		});
+	} catch (error) {
+		res.status(400).send(error);
+	}
+};
+
+/** //* GET request for token verification for account deletion
+ *
+ * @returns Token, User object
+ */
+module.exports.delete_account_get = async (req, res) => {
+	try {
+		const urlToken = req.params.token;
+		const tokenFound = await Token.findOne({ token: urlToken });
+		if (!tokenFound) {
+			throw {
+				error: {
+					type: "Non-existence",
+					message: "Unable to find a valid token or Token already expired",
+				},
+			};
+		}
+
+		const userFound = await User.findOne({ _id: tokenFound._userId });
+		if (!userFound) {
+			throw {
+				error: {
+					type: "Non-existence",
+					message: "Unable to find a user associated with token",
+				},
+			};
+		}
+
+		return res.status(200).send({
+			success: {
+				token: tokenFound,
+				user: userFound,
+			},
+		});
+
+		// Note: in the front end you can determine whether to display form
+		// for password reset or not depending on the response. if you get a
+		// token display the form, if not display error
+	} catch (error) {
+		res.status(400).send(error);
+	}
+};
+
+/** //* Controller for account deletion
+ *
+ * DELETE body: { _userId: , token: , password: }
+ */
+module.exports.delete_account_handler_delete = async (req, res) => {
+	// return res.send("in progress");
+	try {
+		const tokenFound = await Token.findOne({ token: req.body.token });
+		if (!tokenFound) {
+			throw {
+				error: {
+					status_code: 404,
+					type: "Non-existence",
+					message: "Unable to find a valid token or Token already expired",
+				},
+			};
+		}
+
+		const userFound = await User.findOne({ _id: tokenFound._userId });
+		if (!userFound) {
+			throw {
+				error: {
+					type: "Non-existence",
+					message: "Unable to find a user associated with token",
+				},
+			};
+		}
+
+		const validPass = await bcrypt.compare(req.body.password, userFound.password);
+		if (!validPass)
+			throw {
+				error: { type: "Authentication failure", message: "Wrong Password." },
+			};
+
+		await User.deleteOne({ _id: req.body._userId });
+
+		//? implement check ifEmailVerified or not?
+
+		res.status(200).json({
+			success: {
+				type: "Request successful",
+				message: `Account successfully deleted`,
+			},
+		});
+	} catch (error) {
+		return res.status(400).json(error);
 	}
 };

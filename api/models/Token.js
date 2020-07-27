@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const User = require("./User");
-const { string } = require("joi");
+
 //
 //
 /** Token model
@@ -32,6 +32,4 @@ const tokenSchema = mongoose.Schema({
 	},
 });
 
-const Token = mongoose.model("Token", tokenSchema);
-
-module.exports = Token;
+module.exports = mongoose.model("Token", tokenSchema);
