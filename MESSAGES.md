@@ -2,7 +2,17 @@
 
 ## NOTE: Try to write date and recipient for the message
 
-> **Yogesh to Sambeg** > **DATE: 19 July, 2019**
+> **Sambeg to Everyone** > **DATE: 20 Aug, 2020**
+>
+> Things to note regarding `config/`
+>
+> 1. the new dotenv file must be named `config.env` (No major additions have been made inside the file)
+>
+> **ASK ME IF YOU NEED HELP ORGANIZING THE FILE**
+
+---
+
+> **Yogesh to Sambeg** > **DATE: 19 July, 2020**
 >
 > Points to remember
 >
@@ -23,6 +33,8 @@
 > awaited: used await keyword while calling it.
 >
 > Good luck :v
+
+---
 
 > **Sambeg to Sambeg**
 >
