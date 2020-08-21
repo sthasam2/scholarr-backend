@@ -27,7 +27,52 @@ const userSchema = mongoose.Schema({
 		type: Boolean,
 		default: false,
 	},
-	date: {
+	createdDate: {
+		type: Date,
+		default: Date.now,
+	},
+	firstName: {
+		type: String,
+		maxlength: 100,
+		default: null,
+		required: false,
+	},
+	middleName: {
+		type: String,
+		maxlength: 100,
+		default: null,
+		required: false,
+	},
+	lastName: {
+		type: String,
+		maxlength: 100,
+		default: null,
+		required: false,
+	},
+	bio: {
+		type: String,
+		maxlength: 1000,
+		default: null,
+		required: false,
+	},
+	dateOfBirth: {
+		type: Date,
+		// default: Date.now,
+		default: null,
+		max: Date.now,
+		required: false,
+	},
+	avatarImage: {
+		data: { type: String, default: null },
+		contentType: { type: String, default: null },
+		required: false,
+	},
+	coverImage: {
+		data: { type: String, default: null },
+		contentType: { type: String, default: null },
+		required: false,
+	},
+	lastUpdated: {
 		type: Date,
 		default: Date.now,
 	},

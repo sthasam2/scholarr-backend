@@ -1,607 +1,137 @@
-/**
- * *User Controllers
- *
- * *Contails all modules for controlling activities for routes defined in `routes/userRoutes.js`
- * @available_controllers -
- * 1. user_get
- * 2. register_get
- * 3. register_post
- * 4. login_get
- * 5. login_post
- * 6. email_confirmation_handler_get
- * 7. resend_email_confirmation_post
- * 8. password_reset_email_post
- * 9. password_reset_get
- * 10. password_reset_handler_post
- * 11. delete_account_email_post
- * 12. delete_account_get
- * 13. delete_account_handler_post
- */
-
-require("dotenv").config();
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-
-// models
+//models
 const User = require("../models/User");
-const Token = require("../models/Token");
-
-// middleware
-
-//validation
-const {
-	registerValidation,
-	loginValidation,
-	emailValidation,
-	deleteAccountValidation,
-} = require("../middleware/validation");
-// emailer
-const {
-	confirmEmailSender,
-	resetPasswordEmailSender,
-	deleteAccountEmailSender,
-} = require("../middleware/emailSender");
-
-// modules
-
-// exports
-
-// user GET
-module.exports.user_get = (req, res) => {
-	res.send("User page");
-};
+const bcrypt = require("bcryptjs");
+const { updateUserValidation } = require("../middleware/validation");
 
 //
-//* REGISTRATION ----------------------------
 //
-
-/** //* Controls REGISTER GET requests. */
-module.exports.register_get = (req, res) => {
-	res.send(
-		`<h1>Register Page</h1> 
-        <br>
-        <strong>POST</strong> request JSON format: <br>
-		{
-			<div style="margin-left: 35px">
-			<br>"username": "[your username]",
-			<br>"email": "sample@example.com",
-			<br>"password": "[pw here]"<br>
-		</div>
-		}`
-	);
-};
-
-/** //* Controls REGISTER POST requests.
- *
- * POST body: { username: , email: , password: }
- */
-module.exports.register_post = async (req, res) => {
+// GET all users
+module.exports.users_get = async (req, res) => {
+	// const users=
 	try {
-		// First validate req.body data
-		const { error } = registerValidation(req.body);
-		if (error)
-			throw {
-				error: {
-					message: error.details[0].message,
-				},
-			};
+		// const users = await User.find(); // Good only for small userbase
 
-		// Check unique email
-		const userEmailFound = await User.findOne({ email: req.body.email });
-		if (userEmailFound)
-			throw {
-				type: "already exists",
-				message: `Email: '${req.body.email}' is already associated with another account.`,
-			};
+		// for millions of users use cursor method
+		const users = [];
+		const cursor = User.find().cursor();
+		// console.log(cursor);
 
-		// check unique username
-		const usernameFound = await User.findOne({ username: req.body.username });
-		if (usernameFound)
-			throw {
-				type: "already exists",
-				message: `Username: '${req.body.username}' is already taken.`,
-			};
+		for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+			users.push({
+				_id: doc._id,
+				username: doc.username,
+				email: doc.email,
+				displayName: `${doc.firstName} ${doc.lastName}`,
+				dateOfBirth: doc.dateOfBirth,
+				bio: doc.bio,
+				avatarImage: doc.avatarImage,
+				coverImage: doc.coverImage,
+			});
+		}
 
-		// Password hasing using bcrypt
-		const salt = await bcrypt.genSalt(10);
-		// console.log("\nSalt:" + salt);
-		const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
-		// User creation in database (create a new user using the credentials provided and hashed and our schema)
-		const user = new User({
-			username: req.body.username,
-			email: req.body.email,
-			password: hashedPassword,
-		});
-
-		// save the user in the databse
-		const savedUser = await user.save();
-		// console.log("\nsavedUser: " + savedUser);
-
-		// token generator
-		const tokenKey =
-			Math.random().toString(36).substring(2, 15) +
-			Math.random().toString(36).substring(2, 15);
-		const token = new Token({
-			_userId: savedUser.id,
-			token: tokenKey,
-			usage: "Email confirmation",
-		});
-		const savedToken = await token.save();
-		// console.log("\nsavedToken:" + savedToken);
-
-		// send email
-		const messageResponse = await confirmEmailSender(req, user, token);
-		if (messageResponse) throw messageResponse;
-
-		res.status(201).json({
-			message: "Account succesfully created!",
-			userId: user.id,
-			token: savedToken,
-		});
-	} catch (error) {
-		if (error) res.status(400).json({ error });
+		return res.send(users);
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
 	}
 };
 
 //
-//* LOGIN -------------------------------------
 //
-
-/** //* Controls LOGIN GET request. */
-module.exports.login_get = (req, res) => {
-	res.send(
-		`<div>
-        <h1>Login Page</h1> 
-        <br>
-        <strong>POST</strong> request JSON format: 
-        <br>
-        {
-            <br>
-            <div style="margin-left: 35px">
-            "email": "sample@example.com",<br>
-            "password": "[pw here]"
-            <br>
-            </div>
-            <br>
-        }
-        </div>`
-	);
-};
-
-/** //* Controls LOGIN POST request.
- *
- * POST body: { email: , password: }
- */
-module.exports.login_post = async (req, res) => {
+// GET User Details
+module.exports.user_detail_get = async (req, res) => {
 	try {
-		//Validate login req.body data
-		const { error } = loginValidation(req.body);
-		if (error)
-			throw {
-				error: {
-					message: error.details[0].message,
-				},
-			};
-
-		//check email exists
-		const userFound = await User.findOne({ email: req.body.email });
-		if (!userFound)
-			throw {
-				error: { type: "Non-existence", message: "Email not found!" },
-			};
-
-		// check email verified
-		if (!userFound.isEmailVerified)
-			throw {
-				error: { type: "Access denied", message: "Email is not verified!" },
-			};
-
-		// Check password
-		const validPass = await bcrypt.compare(req.body.password, userFound.password);
-		if (!validPass)
-			throw {
-				error: { type: "Authentication failure", message: "Wrong Password." },
-			};
-
-		// assign web token
-		const token = jwt.sign({ _id: userFound._id }, process.env.TOKEN_SECRET);
-		res.header(`auth-token`, token).status(202).send({
-			status: "Success",
-			message: "Login Successful",
-			token: token,
-		});
-	} catch (error) {
-		res.status(400).send(error);
-	}
-};
-
-//
-//* CONFIRMATION -------------------------------
-//
-
-/** //* Confirmation handler GET */
-module.exports.email_confirmation_handler_get = async (req, res) => {
-	try {
-		const urlToken = req.params.token; //retrieve token from url
-		const tokenFound = await Token.findOne({ token: urlToken });
-		if (!tokenFound)
-			throw {
-				type: "Non-existence",
-				message: "Unable to find a valid token or Token already expired",
-			};
-
-		// check if the user exists
-		const userExists = await User.findOne({
-			_id: tokenFound._userId,
-		});
+		const userExists = await User.findOne({ username: req.params.username });
 		if (!userExists)
 			throw {
 				type: "Non-existence",
-				message: "The user associated to token does not exist.",
+				message: "The user does not exist",
 			};
 
-		// check user associated with token for if it is already verified
-		if (userExists.isEmailVerified)
-			throw {
-				type: "already verified",
-				message: "The associated user has already been verified",
-			};
+		const user = {
+			id: userExists._id,
+			username: userExists.username,
+			email: userExists.email,
+			displayName: `${userExists.firstName} ${userExists.lastName}`,
+			dateOfBirth: userExists.dateOfBirth,
+			bio: userExists.bio,
+			avatarImage: userExists.avatarImage,
+			coverImage: userExists.coverImage,
+		};
 
-		// Verify the user
-		const updatedUser = await User.updateOne(
-			{ _id: userExists._id },
-			{ $set: { isEmailVerified: true } }
-		);
-
-		res.status(200).send({
-			message: `Your email: ${userExists.email} has been verified. Now you can use this to login`,
-		});
-	} catch (error) {
-		res.status(400).json(error);
+		return res.status(200).send(user);
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
 	}
 };
 
-/** //* Sends the email confirmation email again
+/** //* Controls PROFILE UPDATE PATCH requests.
  *
- * POST body: { email: , password: }
+ * PUT form-body: { firstName: , middleName: , lastName: , bio: , dateOfBirth: , password: , avatarImage: , coverImage: ,}
  */
-module.exports.resend_email_confirmation_post = async (req, res) => {
-	// First validate req.body data
+module.exports.update_user_patch = async (req, res) => {
 	try {
-		const { error } = emailValidation(req.body);
-		if (error) throw error;
+		const { error } = updateUserValidation(req.body);
+		if (error)
+			throw {
+				error: {
+					message: error.details[0].message,
+				},
+			};
 
-		// Check if user with that email exists
-		const userFound = await User.findOne({ email: req.body.email });
+		// console.log(req.user);
 
+		const userFound = await User.findOne({ _id: req.user._id });
 		if (!userFound)
 			throw {
-				type: "Non-existence",
-				message: `Email: '${req.body.email}' is not associated with any accounts.`,
+				error: {
+					status: 404,
+					message: "associated user not found",
+				},
 			};
 
-		// token generator
-		const tokenKey =
-			Math.random().toString(36).substring(2, 15) +
-			Math.random().toString(36).substring(2, 15);
-
-		// token save to database
-		const token = new Token({
-			_userId: userFound.id,
-			token: tokenKey,
-			usage: "Email confirmation",
-		});
-
-		const newToken = await token.save((error) => {
-			throw error;
-		});
-
-		// send email
-		const mailResponse = await confirmEmailSender(req, userFound, newToken);
-		if (mailResponse) throw mailResponse;
-
-		return res.status(200).send({
-			success: {
-				type: "Request successful",
-				message: "Email confirmation resent",
-			},
-		});
-	} catch (error) {
-		res.status(400).send(error);
-	}
-};
-
-//
-// //* RESET PASSWORD --------------------------
-//
-
-/** //* Sends email for password reset
- *
- * POST body: { email: }
- */
-module.exports.reset_password_email_post = async (req, res) => {
-	// First validate req.body data
-	try {
-		const { error } = emailValidation(req.body);
-		// console.log(error);
-		if (error) throw error;
-		// Check if user with that email exists
-		const userFound = await User.findOne({ email: req.body.email });
-		// console.log(userFound);
-		if (!userFound)
-			throw {
-				type: "Non-existence",
-				message: `Email: '${req.body.email}' is not associated with any accounts.`,
-			};
-		// token generator
-		const tokenKey =
-			Math.random().toString(36).substring(2, 15) +
-			Math.random().toString(36).substring(2, 15);
-		// token save to database
-		const token = new Token({
-			_userId: userFound.id,
-			token: tokenKey,
-			usage: "Password reset",
-		});
-		const newToken = await token.save();
-		// send email
-		const mailResponse = await resetPasswordEmailSender(req, userFound, newToken);
-		if (mailResponse) throw mailResponse;
-
-		// after everything done successfully
-		return res.status(200).send({
-			success: {
-				type: "Request successful",
-				message: "Reset Email confirmation resent",
-			},
-		});
-	} catch (error) {
-		res.status(400).send(error);
-	}
-};
-
-/** //* GET request for token verification for password reset
- *
- * @returns Token, User
- */
-module.exports.reset_password_get = async (req, res) => {
-	try {
-		const urlToken = req.params.token;
-		console.log(urlToken);
-		const tokenFound = await Token.findOne({ token: urlToken });
-		console.log("\n------------- " + tokenFound);
-		if (!tokenFound) {
+		// Check if req user is owner of the user account
+		if (req.user._id != userFound._id)
 			throw {
 				error: {
-					type: "Non-existence",
-					message: "Unable to find a valid token or Token already expired",
+					status: 401,
+					type: "Access Denied!",
+					message: "You do not have permission to edit this!",
 				},
 			};
-		}
-
-		// check user associated with found token
-		const userFound = await User.findOne({ _id: tokenFound._userId });
-		console.log("\n------------- " + userFound);
-		if (!userFound) {
-			throw {
-				error: {
-					type: "Non-existence",
-					message: "Unable to find a user associated with token",
-				},
-			};
-		}
-
-		return res.status(200).send({
-			success: {
-				token: tokenFound,
-				user: userFound,
-			},
-		});
-
-		// Note: in the front end you can determine whether to display form
-		// for password reset or not depending on the response. if you get a
-		// token display the form, if not display error
-	} catch (error) {
-		res.status(400).send(error);
-	}
-};
-
-/** //* Reset password handler
- *
- * PATCH body: { _userId: , token: , password: }
- */
-module.exports.reset_password_handler_patch = async (req, res) => {
-	// return res.send("in progress");
-	try {
-		const userFound = await User.findOne({ _id: req.body._userId });
-		if (!userFound) {
-			throw {
-				error: {
-					type: "Non-existence",
-					message: "Unable to find a user associated with token",
-				},
-			};
-		}
-
-		const tokenFound = await Token.findOne({ token: req.body.token });
-		if (!tokenFound) {
-			throw {
-				error: {
-					type: "Non-existence",
-					message: "Unable to find a valid token or Token already expired",
-				},
-			};
-		}
-
-		// NOTE: implement check ifEmailVerified or not?
-
-		const salt = await bcrypt.genSalt(10);
-		const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
-		await User.updateOne(
-			{
-				_id: userFound._id,
-			},
-			{
-				$set: {
-					password: hashedPassword,
-				},
-			}
-		);
-
-		res.status(200).json({
-			success: {
-				type: "Request successful",
-				message: `Password successfully reset for ${userFound.email}`,
-			},
-		});
-	} catch (error) {
-		return res.status(400).json(error);
-	}
-};
-
-//
-// //* ACCOUNT DELETEION ---------------------------
-//
-
-/** //* Sends email for account delete
- *
- * POST body: { email: , password: }
- */
-module.exports.delete_account_email_post = async (req, res) => {
-	try {
-		// console.log(req.body);
-		const { error } = deleteAccountValidation(req.body);
-		if (error) throw error;
-
-		const userFound = await User.findOne({ email: req.body.email });
-		console.log(`\n\n${userFound}`);
-		if (!userFound)
-			throw {
-				type: "Non-existence",
-				message: `Email: '${req.body.email}' is not associated with any accounts.`,
-			};
-
-		const validPass = await bcrypt.compare(req.body.password, userFound.password);
-		console.log(`\n\n${validPass}`);
-		if (!validPass)
-			throw {
-				error: { type: "Authentication failure", message: "Wrong Password." },
-			};
-
-		const tokenKey =
-			Math.random().toString(36).substring(2, 15) +
-			Math.random().toString(36).substring(2, 15);
-		const token = new Token({
-			_userId: userFound.id,
-			token: tokenKey,
-			usage: "Account Deletion",
-		});
-		const newToken = await token.save();
-		console.log(newToken);
-
-		const mailResponse = await deleteAccountEmailSender(req, userFound, newToken);
-		if (mailResponse) throw mailResponse;
-
-		return res.status(200).send({
-			success: {
-				type: "Request successful",
-				message: "Delete Account email confirmation sent",
-			},
-		});
-	} catch (error) {
-		res.status(400).send(error);
-	}
-};
-
-/** //* GET request for token verification for account deletion
- *
- * @returns Token, User object
- */
-module.exports.delete_account_get = async (req, res) => {
-	try {
-		const urlToken = req.params.token;
-		const tokenFound = await Token.findOne({ token: urlToken });
-		if (!tokenFound) {
-			throw {
-				error: {
-					type: "Non-existence",
-					message: "Unable to find a valid token or Token already expired",
-				},
-			};
-		}
-
-		const userFound = await User.findOne({ _id: tokenFound._userId });
-		if (!userFound) {
-			throw {
-				error: {
-					type: "Non-existence",
-					message: "Unable to find a user associated with token",
-				},
-			};
-		}
-
-		return res.status(200).send({
-			success: {
-				token: tokenFound,
-				user: userFound,
-			},
-		});
-
-		// Note: in the front end you can determine whether to display form
-		// for password reset or not depending on the response. if you get a
-		// token display the form, if not display error
-	} catch (error) {
-		res.status(400).send(error);
-	}
-};
-
-/** //* Controller for account deletion
- *
- * DELETE body: { _userId: , token: , password: }
- */
-module.exports.delete_account_handler_delete = async (req, res) => {
-	// return res.send("in progress");
-	try {
-		const tokenFound = await Token.findOne({ token: req.body.token });
-		if (!tokenFound) {
-			throw {
-				error: {
-					status_code: 404,
-					type: "Non-existence",
-					message: "Unable to find a valid token or Token already expired",
-				},
-			};
-		}
-
-		const userFound = await User.findOne({ _id: tokenFound._userId });
-		if (!userFound) {
-			throw {
-				error: {
-					type: "Non-existence",
-					message: "Unable to find a user associated with token",
-				},
-			};
-		}
 
 		const validPass = await bcrypt.compare(req.body.password, userFound.password);
 		if (!validPass)
 			throw {
-				error: { type: "Authentication failure", message: "Wrong Password." },
+				error: { status: 401, type: "Authentication failure", message: "Wrong Password." },
 			};
 
-		await User.deleteOne({ _id: req.body._userId });
+		// check which key needs upgrading
+		let query = { $set: {} };
+		for (let key in req.body) {
+			if (userFound[key] && userFound[key] !== req.body[key])
+				//first check if userFound[key] exists && check value different
+				query.$set[key] = req.body[key]; // creates a $set object with keys that have different values
+		}
 
-		//? implement check ifEmailVerified or not?
+		const updatedProfile = await User.updateOne(
+			{
+				_userId: req.user._id,
+			},
+			query //using $set method here to update values
+		);
 
-		res.status(200).json({
-			success: {
-				type: "Request successful",
-				message: `Account successfully deleted`,
+		console.log(updatedProfile);
+
+		return res.status(200).send({
+			Success: {
+				status: 200,
+				message: "Profile successfully created",
 			},
 		});
-	} catch (error) {
-		return res.status(400).json(error);
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
 	}
 };

@@ -47,3 +47,21 @@ module.exports.deleteAccountValidation = (data) => {
 
 	return Joi.validate(data, schema);
 };
+
+//
+//
+// CREATE PROFILE
+module.exports.updateUserValidation = (data) => {
+	const schema = {
+		firstName: Joi.string().max(100),
+		middleName: Joi.string().max(100),
+		lastName: Joi.string().max(100),
+		bio: Joi.string().max(1000),
+		password: Joi.string().min(8).required(),
+		dateOfBirth: Joi.date(),
+		// avatarPicture: Joi.string(),
+		// coverPicture: Joi.string(),
+	};
+
+	return Joi.validate(data, schema);
+};
