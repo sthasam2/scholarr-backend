@@ -225,9 +225,9 @@ const backgroundSVG = (
         y2="492.002"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#808080" stop-opacity="0.25" />
-        <stop offset="0.53514" stop-color="#808080" stop-opacity="0.12" />
-        <stop offset="1" stop-color="#808080" stop-opacity="0.1" />
+        <stop stopColor="#808080" stopOpacity="0.25" />
+        <stop offset="0.53514" stopColor="#808080" stopOpacity="0.12" />
+        <stop offset="1" stopColor="#808080" stopOpacity="0.1" />
       </linearGradient>
       <linearGradient
         id="paint1_linear"
@@ -237,9 +237,9 @@ const backgroundSVG = (
         y2="6111.75"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#808080" stop-opacity="0.25" />
-        <stop offset="0.53514" stop-color="#808080" stop-opacity="0.12" />
-        <stop offset="1" stop-color="#808080" stop-opacity="0.1" />
+        <stop stopColor="#808080" stopOpacity="0.25" />
+        <stop offset="0.53514" stopColor="#808080" stopOpacity="0.12" />
+        <stop offset="1" stopColor="#808080" stopOpacity="0.1" />
       </linearGradient>
       <linearGradient
         id="paint2_linear"
@@ -249,9 +249,9 @@ const backgroundSVG = (
         y2="3832.65"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#808080" stop-opacity="0.25" />
-        <stop offset="0.53514" stop-color="#808080" stop-opacity="0.12" />
-        <stop offset="1" stop-color="#808080" stop-opacity="0.1" />
+        <stop stopColor="#808080" stopOpacity="0.25" />
+        <stop offset="0.53514" stopColor="#808080" stopOpacity="0.12" />
+        <stop offset="1" stopColor="#808080" stopOpacity="0.1" />
       </linearGradient>
       <linearGradient
         id="paint3_linear"
@@ -261,9 +261,9 @@ const backgroundSVG = (
         y2="423.044"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#808080" stop-opacity="0.25" />
-        <stop offset="0.53514" stop-color="#808080" stop-opacity="0.12" />
-        <stop offset="1" stop-color="#808080" stop-opacity="0.1" />
+        <stop stopColor="#808080" stopOpacity="0.25" />
+        <stop offset="0.53514" stopColor="#808080" stopOpacity="0.12" />
+        <stop offset="1" stopColor="#808080" stopOpacity="0.1" />
       </linearGradient>
       <linearGradient
         id="paint4_linear"
@@ -273,9 +273,9 @@ const backgroundSVG = (
         y2="414"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#808080" stop-opacity="0.25" />
-        <stop offset="0.53514" stop-color="#808080" stop-opacity="0.12" />
-        <stop offset="1" stop-color="#808080" stop-opacity="0.1" />
+        <stop stopColor="#808080" stopOpacity="0.25" />
+        <stop offset="0.53514" stopColor="#808080" stopOpacity="0.12" />
+        <stop offset="1" stopColor="#808080" stopOpacity="0.1" />
       </linearGradient>
       <linearGradient
         id="paint5_linear"
@@ -285,9 +285,9 @@ const backgroundSVG = (
         y2="2204.72"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#808080" stop-opacity="0.25" />
-        <stop offset="0.53514" stop-color="#808080" stop-opacity="0.12" />
-        <stop offset="1" stop-color="#808080" stop-opacity="0.1" />
+        <stop stopColor="#808080" stopOpacity="0.25" />
+        <stop offset="0.53514" stopColor="#808080" stopOpacity="0.12" />
+        <stop offset="1" stopColor="#808080" stopOpacity="0.1" />
       </linearGradient>
       <linearGradient
         id="paint6_linear"
@@ -297,9 +297,9 @@ const backgroundSVG = (
         y2="95483.2"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#808080" stop-opacity="0.25" />
-        <stop offset="0.53514" stop-color="#808080" stop-opacity="0.12" />
-        <stop offset="1" stop-color="#808080" stop-opacity="0.1" />
+        <stop stopColor="#808080" stopOpacity="0.25" />
+        <stop offset="0.53514" stopColor="#808080" stopOpacity="0.12" />
+        <stop offset="1" stopColor="#808080" stopOpacity="0.1" />
       </linearGradient>
     </defs>
   </svg>

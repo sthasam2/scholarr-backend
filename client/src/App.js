@@ -10,7 +10,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import "./styles/style.css";
 
 function App() {
-  const [isLoggedIn, setIsLogedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -32,8 +32,8 @@ function App() {
                 ) : (
                   <LandingPage
                     isLoggedIn={isLoggedIn}
+                    setIsLoggedIn={setIsLoggedIn}
                     setShowModal={setShowModal}
-                    setIsLogedIn={setIsLogedIn}
                   />
                 )}
               </Switch>
