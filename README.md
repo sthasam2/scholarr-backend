@@ -1,10 +1,17 @@
 # Scholarr
 
-[![Version badge](https://img.shields.io/badge/Version-v.0.2.4.1-green.svg)](https://shields.io/)
+[![Version badge](https://img.shields.io/badge/Version-v.0.2.4.2-green.svg)](https://shields.io/)
 
 An online hub for **remote learning**.
 
 ## Changelogs
+
+- ### v.0.2.4.2
+
+1. **[Beta: Testing]** User Avatar Cover Photo Upload feature
+2. **[Beta: Testing]** Classroom routes and controllers. So the program wont run. Uncomment `classroomRoute.js` to check routes
+3. Added Classroom schema
+4. Bug Fixes
 
 - ### v.0.2.4.1
 
