@@ -1,10 +1,16 @@
 # Scholarr
 
-[![Version badge](https://img.shields.io/badge/Version-v.0.2.4.2-green.svg)](https://shields.io/)
+[![Version badge](https://img.shields.io/badge/Version-v.0.3.0-green.svg)](https://shields.io/)
 
 An online hub for **remote learning**.
 
 ## Changelogs
+
+- ### v.0.3.0
+
+1. React setup (Landing Page and User Page)
+2. Private Routes setup
+3. Minor bug fixes
 
 - ### v.0.2.4.2
 
