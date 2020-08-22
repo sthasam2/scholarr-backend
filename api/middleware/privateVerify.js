@@ -1,15 +1,17 @@
 const jwt = require("jsonwebtoken");
 
 // middleware token check function
-module.exports = (req, res, next) => {
-    const token = req.header("auth-token");
-    if (!token) res.status(401).send(`Error 401: Access denied!`);
+module.exports.privateVerify = (req, res, next) => {
+	try {
+		const token = req.header("auth-token");
+		if (!token) throw { error: { status: 401, message: "Access Denied!" } };
 
-    try {
-        const verified = jwt.verify(token, process.env.TOKEN_SECRET);
-        req.user = verified;
-        next();
-    } catch (error) {
-        res.status(400).send(`Invalid Token!`);
-    }
+		const verifiedUser = jwt.verify(token, process.env.TOKEN_SECRET);
+		req.user = verifiedUser;
+		// console.log(verified);
+		next();
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
 };

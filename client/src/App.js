@@ -1,12 +1,14 @@
-import React from "react";
 import "./App.css";
+import React from "react";
+import connectSocket from "./socket/socketClient";
 
 function App() {
-    return (
-        <div className="container">
-            <h1 className="header">Front-End</h1>
-        </div>
-    );
+	connectSocket();
+	return (
+		<h1>
+			<p>Hello There!</p>
+		</h1>
+	);
 }
 
 export default App;

@@ -1,212 +1,137 @@
-require("dotenv").config();
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-
-// models
+//models
 const User = require("../models/User");
-const Token = require("../models/Token");
+const bcrypt = require("bcryptjs");
+const { updateUserValidation } = require("../middleware/validation");
 
-// middleware
-const { registerValidation, loginValidation } = require("../middleware/validation");
-const { confirmEmailSender } = require("../middleware/emailSender");
+//
+//
+// GET all users
+module.exports.users_get = async (req, res) => {
+	// const users=
+	try {
+		// const users = await User.find(); // Good only for small userbase
 
-// exports
+		// for millions of users use cursor method
+		const users = [];
+		const cursor = User.find().cursor();
+		// console.log(cursor);
 
-// user GET
-module.exports.user_get = (req, res) => {
-	res.send("User page");
-};
-
-// register GET ------------------------------------------------------------------
-
-/** Controls register GET requests. */
-module.exports.register_get = (req, res) => {
-	res.send(
-		`<h1>Register Page</h1> 
-        <br>
-        <strong>POST</strong> request JSON format: <br>
-		{
-			<div style="margin-left: 35px">
-			<br>"username": "[your username]",
-			<br>"email": "sample@example.com",
-			<br>"password": "[pw here]"<br>
-		</div>
-		}`
-	);
-};
-
-// register POST -----------------------------------------------------------------
-
-/** Controls register POST requests */
-module.exports.register_post = async (req, res) => {
-	// First validate req.body data
-	const { error } = registerValidation(req.body);
-	if (error) return res.status(400).send(error.details[0].message);
-
-	// Check unique email
-	await User.findOne({ email: req.body.email }, (err, queried_user) => {
-		//callback
-		if (queried_user)
-			return res.status(400).send({
-				error: {
-					type: "already exists",
-					message: `Email: '${req.body.email}' is already associated with another account.`,
-				},
-			});
-	});
-
-	// Check unique username
-	await User.findOne({ username: req.body.username }, (err, queried_user) => {
-		//callback
-		if (queried_user)
-			return res.status(400).send({
-				error: {
-					type: "already exists",
-					message: `Username: '${req.body.username}' is already taken.`,
-				},
-			});
-	});
-	// if (usernameExist)
-	//     return res.status(400).send(`Username: '${req.body.username}' is already taken.`);
-
-	// Password hasing using bcrypt
-	const salt = await bcrypt.genSalt(10);
-	const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
-	// User creation in database
-	const user = new User({
-		username: req.body.username,
-		email: req.body.email,
-		password: hashedPassword,
-	});
-	// const savedUser =
-	await user.save((error) => {
-		if (error) {
-			return res.status(400).send({ error: err });
-		} else {
-			res.status(201).send({
-				message: "Account succesfully created!",
-				userId: user.id,
+		for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+			users.push({
+				_id: doc._id,
+				username: doc.username,
+				email: doc.email,
+				displayName: `${doc.firstName} ${doc.lastName}`,
+				dateOfBirth: doc.dateOfBirth,
+				bio: doc.bio,
+				avatarImage: doc.avatarImage,
+				coverImage: doc.coverImage,
 			});
 		}
-	});
 
-	// token generator
-	const token_key =
-		Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-	const token = new Token({
-		_userId: user.id,
-		token: token_key,
-	});
-	await token.save((error) => {
-		if (error) {
-			return res.status(400).send({ error: err });
-		}
-	});
-
-	// send email
-	confirmEmailSender(req, res, token);
+		return res.send(users);
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
 };
 
-// login GET ------------------------------------------------------------------
-/** Controls login GET requests */
-module.exports.login_get = (req, res) => {
-	res.send(
-		`<div>
-        <h1>Login Page</h1> 
-        <br>
-        <strong>POST</strong> request JSON format: 
-        <br>
-        {
-            <br>
-            <div style="margin-left: 35px">
-            "email": "sample@example.com",<br>
-            "password": "[pw here]"
-            <br>
-            </div>
-            <br>
-        }
-        </div>`
-	);
+//
+//
+// GET User Details
+module.exports.user_detail_get = async (req, res) => {
+	try {
+		const userExists = await User.findOne({ username: req.params.username });
+		if (!userExists)
+			throw {
+				type: "Non-existence",
+				message: "The user does not exist",
+			};
+
+		const user = {
+			id: userExists._id,
+			username: userExists.username,
+			email: userExists.email,
+			displayName: `${userExists.firstName} ${userExists.lastName}`,
+			dateOfBirth: userExists.dateOfBirth,
+			bio: userExists.bio,
+			avatarImage: userExists.avatarImage,
+			coverImage: userExists.coverImage,
+		};
+
+		return res.status(200).send(user);
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
 };
 
-// login POST -------------------------------------------------------------------
-/** Controls login POST requests */
-module.exports.login_post = async (req, res) => {
-	//Validate login req.body data
-	const { error } = loginValidation(req.body);
-	if (error) res.status(400).send(error.details[0].message);
-
-	//check if email exists
-	const user = await User.findOne({ email: req.body.email });
-	if (!user) res.status(400).send("Email not found");
-
-	// Check password
-	const validPass = await bcrypt.compare(req.body.password, user.password);
-	if (!validPass) res.status(400).send("Password is wrong");
-
-	// web token
-	const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-	res.header(`auth-token`, token).send(token); // VVI token header for all privated routes
-	//NOTE: BETTER WAY FOR SENDING TOKENS
-
-	//after email and password check
-	res.status(201).send({ message: "Successfully, Logged in!" });
-};
-
-/**
- *  confirmation handler GET ---------------------------------------------------------
+/** //* Controls PROFILE UPDATE PATCH requests.
+ *
+ * PUT form-body: { firstName: , middleName: , lastName: , bio: , dateOfBirth: , password: , avatarImage: , coverImage: ,}
  */
-module.exports.email_confirmation_handler = async (req, res) => {
-	// const email = req.body.email;
-	const token = req.params.token; //retrieve token from url
-	// const tokenExists =
-	await Token.findOne({ token: token }, async (err, queried_token) => {
-		/* call back*/
-		if (!queried_token)
-			return res.status(400).send({
+module.exports.update_user_patch = async (req, res) => {
+	try {
+		const { error } = updateUserValidation(req.body);
+		if (error)
+			throw {
 				error: {
-					type: "not verified",
-					message: "Unable to find a valid token or Token already expired",
+					message: error.details[0].message,
 				},
-			});
+			};
 
-		await User.findOne(
-			{ _id: queried_token._userId, email: req.body.email },
-			async (err, queried_user) => {
-				if (!queried_user) {
-					return res.status(400).send({
-						error: {
-							type: "user non-existence",
-							message: "The user associated to token does not exist.",
-						},
-					});
-				}
-				// check user associated with token
-				if (queried_user.isVerified)
-					return res.status(400).send({
-						error: {
-							type: "already verified",
-							message: "The associated user has already been verified",
-						},
-					});
-				// Verify the user
-				queried_user.isVerified = true;
-				await queried_user.save((error) => {
-					if (error)
-						return res.status(400).send({
-							error: {
-								type: "",
-								message: "The associated user has already been verified",
-							},
-						});
-					res.status(200).send({
-						message: `The email: ${req.body.email} has been verified. Now you can use this to login`,
-					});
-				});
-			}
+		// console.log(req.user);
+
+		const userFound = await User.findOne({ _id: req.user._id });
+		if (!userFound)
+			throw {
+				error: {
+					status: 404,
+					message: "associated user not found",
+				},
+			};
+
+		// Check if req user is owner of the user account
+		if (req.user._id != userFound._id)
+			throw {
+				error: {
+					status: 401,
+					type: "Access Denied!",
+					message: "You do not have permission to edit this!",
+				},
+			};
+
+		const validPass = await bcrypt.compare(req.body.password, userFound.password);
+		if (!validPass)
+			throw {
+				error: { status: 401, type: "Authentication failure", message: "Wrong Password." },
+			};
+
+		// check which key needs upgrading
+		let query = { $set: {} };
+		for (let key in req.body) {
+			if (userFound[key] && userFound[key] !== req.body[key])
+				//first check if userFound[key] exists && check value different
+				query.$set[key] = req.body[key]; // creates a $set object with keys that have different values
+		}
+
+		const updatedProfile = await User.updateOne(
+			{
+				_userId: req.user._id,
+			},
+			query //using $set method here to update values
 		);
-	});
-};
 
-// Reset password
+		console.log(updatedProfile);
+
+		return res.status(200).send({
+			Success: {
+				status: 200,
+				message: "Profile successfully created",
+			},
+		});
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
+};
