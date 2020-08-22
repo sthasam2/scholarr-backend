@@ -3,6 +3,7 @@ import Nav from "./Nav";
 import { motion, AnimatePresence } from "framer-motion";
 import Login from "./Auth/Login";
 import LandingHome from "./LandingHome";
+import About from "../Layout/About";
 import Register from "./Auth/Register";
 import { Route, Switch, Redirect } from "react-router-dom";
 
@@ -19,6 +20,7 @@ const LandingPage = ({ isLoggedIn, setIsLoggedIn, setShowModal }) => {
             <Login isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
           )}
         />
+        <Route path="/about" render={(props) => <About />} />
         <Route path="/register" render={(props) => <Register />} />
         {/* <Route path="/404" component={Register} /> */}
         <Redirect to="/" />

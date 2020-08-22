@@ -21,14 +21,14 @@ const Login = ({ isLoggedIn, setIsLoggedIn }) => {
         }),
       };
 
-      const response = await fetch(
-        "http://localhost:4000/auth/register",
-        options
-      );
+      const response = await fetch("http://localhost:4000/auth/login", options);
       console.log(response);
       if (response.ok) {
         const jsonResponse = await response.json();
         console.log(jsonResponse);
+        setIsLoggedIn(true);
+        localStorage.setItem(isLoggedIn, true);
+        console.log(localStorage.getItem(isLoggedIn));
       }
     } else {
       console.log("i");
@@ -36,7 +36,7 @@ const Login = ({ isLoggedIn, setIsLoggedIn }) => {
   };
 
   return (
-    <motion.div exit={{ opacity: 0 }} className="login">
+    <motion.div exit={{ opacity: 0 }} className="login auth">
       <form className="login-form" onSubmit={handleSubmit}>
         <label htmlFor="email">Email</label>
         <input
