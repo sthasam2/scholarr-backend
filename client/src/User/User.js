@@ -1,5 +1,5 @@
 import React from "react";
-import { AnimatePresence } from "framer-motion";
+import About from "../Layout/About";
 import Weather from "../Layout/Weather";
 import Home from "./Components/Home";
 import Nav from "../Layout/Nav";
@@ -13,6 +13,7 @@ const User = ({ showModal, setShowModal }) => {
       <Sidebar />
       <Weather />
       <Route path="/" exact render={(props) => <Home />} />
+      <Route path="/about" render={(props) => <About />} />
     </main>
   );
 };

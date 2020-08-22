@@ -8,10 +8,20 @@ import Modal from "./Modal";
 
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import "./styles/style.css";
+import { useEffect } from "react";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    // localStorage.setItem(isLoggedIn, false);
+    const temp = JSON.parse(localStorage.getItem(isLoggedIn));
+    console.log(temp);
+    if (temp) {
+      setIsLoggedIn(temp);
+    }
+  });
 
   return (
     <>

@@ -6,8 +6,8 @@ const Nav = () => {
       <nav className="nav">
         <div className="nav-links">
           <li className="nav-link">Home</li>
-          <li className="nav-link">Dashboard</li>
           <li className="nav-link">About Us</li>
+          <li className="nav-link">Logout</li>
           <div className="profile-picture"></div>
         </div>
       </nav>
