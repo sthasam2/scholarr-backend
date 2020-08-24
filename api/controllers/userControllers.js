@@ -32,12 +32,9 @@ module.exports.users_get = async (req, res) => {
 	try {
 		// const users = await User.find(); // Good only for small userbase
 
-		// for millions of users use cursor method
+		// for millions of users and customized use async iterator method method
 		const users = [];
-		const cursor = User.find().cursor();
-		// console.log(cursor);
-
-		for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+		for await (const doc of User.find()) {
 			users.push({
 				_id: doc._id,
 				username: doc.username,
@@ -51,6 +48,47 @@ module.exports.users_get = async (req, res) => {
 		}
 
 		return res.send(users);
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
+};
+
+//
+//
+// POST group of users
+/**
+ *
+ * POST body: { userGroup: [_id1, _id2, _id3, ...],}
+ */
+module.exports.group_users_post = async (req, res) => {
+	try {
+		const users = await User.find({ _id: { $in: req.body.userGroup } });
+		if (!users)
+			throw {
+				error: {
+					status: 404,
+					type: "Non-existence",
+					message: "No Users found for given array of ids",
+				},
+			};
+
+		const group = [];
+		for (let doc of users) {
+			console.log(doc);
+			group.push({
+				_id: doc._id,
+				username: doc.username,
+				email: doc.email,
+				displayName: `${doc.firstName} ${doc.lastName}`,
+				dateOfBirth: doc.dateOfBirth,
+				bio: doc.bio,
+				avatarImage: doc.avatarImage,
+				coverImage: doc.coverImage,
+			});
+		}
+
+		return res.status(200).send(group);
 	} catch (err) {
 		console.error(err);
 		return res.status(400).send(err);

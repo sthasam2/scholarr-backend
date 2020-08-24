@@ -139,11 +139,11 @@ module.exports.register_post = async (req, res) => {
 
 		// save the user in the databse
 		const savedUser = await user.save();
-		// console.log("\nsavedUser: " + savedUser);
 
 		// token generator
 		const tokenKey =
-			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+			Math.random().toString(36).substring(2, 10) +
+			Math.random().toString(36).substring(2, 10);
 		const token = new Token({
 			_userId: savedUser.id,
 			token: tokenKey,
@@ -162,7 +162,7 @@ module.exports.register_post = async (req, res) => {
 			token: savedToken,
 		});
 	} catch (error) {
-		console.error(err);
+		console.error(error);
 		return res.status(400).json({ error });
 	}
 };
@@ -225,9 +225,9 @@ module.exports.login_post = async (req, res) => {
 			message: "Login Successful",
 			token: token,
 		});
-	} catch (error) {
+	} catch (err) {
 		console.error(err);
-		return res.status(400).send(error);
+		return res.status(400).send(err);
 	}
 };
 
@@ -299,7 +299,8 @@ module.exports.resend_email_confirmation_post = async (req, res) => {
 
 		// token generator
 		const tokenKey =
-			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+			Math.random().toString(36).substring(2, 10) +
+			Math.random().toString(36).substring(2, 10);
 
 		// token save to database
 		const token = new Token({
@@ -352,7 +353,8 @@ module.exports.reset_password_email_post = async (req, res) => {
 			};
 		// token generator
 		const tokenKey =
-			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+			Math.random().toString(36).substring(2, 10) +
+			Math.random().toString(36).substring(2, 10);
 		// token save to database
 		const token = new Token({
 			_userId: userFound.id,
@@ -509,7 +511,8 @@ module.exports.delete_account_email_post = async (req, res) => {
 			};
 
 		const tokenKey =
-			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+			Math.random().toString(36).substring(2, 10) +
+			Math.random().toString(36).substring(2, 10);
 		const token = new Token({
 			_userId: userFound.id,
 			token: tokenKey,

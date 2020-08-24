@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Classroom = require("./Classroom");
 
 //
 //
@@ -14,6 +15,7 @@ const userSchema = mongoose.Schema({
 	email: {
 		type: String,
 		required: true,
+		unique: true,
 		minlength: 6,
 		maxlength: 255,
 	},
@@ -35,46 +37,51 @@ const userSchema = mongoose.Schema({
 		type: String,
 		maxlength: 100,
 		default: null,
-		required: false,
 	},
 	middleName: {
 		type: String,
 		maxlength: 100,
 		default: null,
-		required: false,
 	},
 	lastName: {
 		type: String,
 		maxlength: 100,
 		default: null,
-		required: false,
 	},
 	bio: {
 		type: String,
 		maxlength: 1000,
 		default: null,
-		required: false,
 	},
 	dateOfBirth: {
 		type: Date,
 		// default: Date.now,
 		default: null,
 		max: Date.now,
-		required: false,
 	},
 	avatarImage: {
 		data: { type: String, default: null },
 		contentType: { type: String, default: null },
-		required: false,
 	},
 	coverImage: {
 		data: { type: String, default: null },
 		contentType: { type: String, default: null },
-		required: false,
 	},
+	classesTeaching: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Classroom",
+		},
+	],
+	classesAttending: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Classroom",
+		},
+	],
 	lastUpdated: {
 		type: Date,
-		default: Date.now,
+		default: null,
 	},
 });
 
