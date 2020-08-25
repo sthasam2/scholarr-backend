@@ -270,6 +270,10 @@ module.exports.update_class_patch = async (req, res) => {
 	}
 };
 
+module.exports.class_delete = async (req, res) => {
+	console.log("class_delete");
+};
+
 //
 //
 // Classwork methods

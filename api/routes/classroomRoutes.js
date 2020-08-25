@@ -56,7 +56,7 @@ classroomRouter.patch(
 classroomRouter.delete(
 	"/:classId/delete",
 	loggedInVerify,
-	classroomController.classroom_delete
+	classroomController.class_delete
 ); /** delete classroom @method DELETE @endpoint `api/classroom/:classId/delete`*/
 
 //

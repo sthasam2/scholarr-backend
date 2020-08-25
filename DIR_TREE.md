@@ -1,5 +1,6 @@
 - __Scholarr__
    - [DIR\_STRUCTURE.md](DIR_STRUCTURE.md)
+   - [DIR\_TREE.md](DIR_TREE.md)
    - [MESSAGES.md](MESSAGES.md)
    - [README.md](README.md)
    - __api__
@@ -11,7 +12,8 @@
      - __middleware__
        - [emailSender.js](api/middleware/emailSender.js)
        - [fileUpload.js](api/middleware/fileUpload.js)
-       - [privateVerify.js](api/middleware/privateVerify.js)
+       - [loggedInVerify.js](api/middleware/loggedInVerify.js)
+       - [ownerVerify.js](api/middleware/ownerVerify.js)
        - [validation.js](api/middleware/validation.js)
      - __models__
        - [Classroom.js](api/models/Classroom.js)
@@ -25,6 +27,7 @@
        - [userRoutes.js](api/routes/userRoutes.js)
      - __utils__
        - [codeTokensGenerator.js](api/utils/codeTokensGenerator.js)
+       - [errorMessages.js](api/utils/errorMessages.js)
        - [modelQueries.js](api/utils/modelQueries.js)
    - __client__
      - [README.md](client/README.md)
