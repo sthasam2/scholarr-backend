@@ -9,7 +9,7 @@ An online hub for **remote learning**.
 - ### v.0.3.2.1
 
 1. Frontend separated from the backend.
-2. deployed to heroku(https://calm-depths-22874.herokuapp.com).
+2. deployed to heroku(https://tranquil-woodland-86159.herokuapp.com/).
 3. minor bug fixes.
 
 - ### v.0.3.1.1
