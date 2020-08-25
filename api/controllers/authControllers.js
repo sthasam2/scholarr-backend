@@ -101,6 +101,7 @@ module.exports.register_get = (req, res) => {
 module.exports.register_post = async (req, res) => {
 	try {
 		// First validate req.body data
+		console.log(req.body);
 		const { error } = registerValidation(req.body);
 		if (error)
 			throw {

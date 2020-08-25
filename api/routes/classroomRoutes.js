@@ -14,7 +14,7 @@
 
 const classroomRouter = require("express").Router();
 const classroomController = require("../controllers/classroomControllers");
-const { privateVerify } = require("../middleware/privateVerify");
+const { loggedInVerify } = require("../middleware/loggedInVerify");
 // const { imagesUpload, fileUpload } = require("../middleware/fileUpload");
 
 //
@@ -24,40 +24,40 @@ const { privateVerify } = require("../middleware/privateVerify");
 
 classroomRouter.get(
 	"/",
-	privateVerify,
+	loggedInVerify,
 	classroomController.classes_get
 ); /** get all classes available  @method GET @endpoint `api/classrooms` */
 
 classroomRouter.get(
 	"/user/:userId",
-	privateVerify,
+	loggedInVerify,
 	classroomController.user_classes_get
 ); /** get all classes available for certain user @method GET @endpoint `api/classroom/:userId`*/
 
 // CRUD classroom
 classroomRouter.post(
 	"/create",
-	privateVerify,
+	loggedInVerify,
 	classroomController.create_class_post
 ); /** CREATE classroom @method POST @endpoint `api/classroom/:classId/update`*/
 
 classroomRouter.get(
 	"/:classId",
-	privateVerify,
+	loggedInVerify,
 	classroomController.class_detail_get
 ); /** get certain classroom detail @method GET @endpoint `api/classroom/:classId`*/
 
 classroomRouter.patch(
 	"/:classId/update",
-	privateVerify,
+	loggedInVerify,
 	classroomController.update_class_patch
 ); /** UPDATE classroom @method PATCH @endpoint `api/classroom/:classId/update`*/
 
-// classroomRouter.delete(
-// 	"/:classId/delete",
-// 	privateVerify,
-// 	classroomController.classroom_delete
-// ); /** delete classroom @method DELETE @endpoint `api/classroom/:classId/delete`*/
+classroomRouter.delete(
+	"/:classId/delete",
+	loggedInVerify,
+	classroomController.classroom_delete
+); /** delete classroom @method DELETE @endpoint `api/classroom/:classId/delete`*/
 
 //
 //
@@ -65,7 +65,7 @@ classroomRouter.patch(
 
 classroomRouter.get(
 	"/:classId/classworks",
-	privateVerify,
+	loggedInVerify,
 	classroomController.classworks_get
 ); /** get classroom classworks @method GET @endpoint `api/classroom/:classId/classworks`*/
 
@@ -73,25 +73,25 @@ classroomRouter.get(
 
 classroomRouter.post(
 	"/:classId/classworks/create",
-	privateVerify,
+	loggedInVerify,
 	classroomController.create_classwork_post
 ); /** create classwork @method POST @endpoint `api/classroom/:classId/classworks/create`*/
 
 classroomRouter.get(
 	"/:classId/classworks/:classworkId",
-	privateVerify,
+	loggedInVerify,
 	classroomController.classwork_detail_get
 ); /** get certain classrooms classwork @method GET @endpoint `api/classroom/:classId/classworks/:classworkId`*/
 
 classroomRouter.patch(
 	"/:classId/classworks/:classworkId/update",
-	privateVerify,
+	loggedInVerify,
 	classroomController.update_classwork_patch
 ); /** update classwork @method PATCH @endpoint `api/classroom/:classId/classworks/:classworkId/update`*/
 
 // classroomRouter.delete(
 // 	"/:classId/classworks/:classworkId/delete",
-// 	privateVerify,
+// 	loggedInVerify,
 // 	classroomController.classwork_delete
 // ); /** delete classwork @method DELETE @endpoint `api/classroom/:classId/classworks/:classworkId/delete`*/
 
@@ -101,13 +101,13 @@ classroomRouter.patch(
 
 classroomRouter.post(
 	"/:classId/classworks/:classworkId/submit",
-	privateVerify,
+	loggedInVerify,
 	classroomController.submit_classwork_post
 ); /** submit classwork @method GET @endpoint `api/classroom/:classId/classworks/:classId/submit`*/
 
 classroomRouter.patch(
 	"/:classId/classworks/:classworkId/:submissionId/update",
-	privateVerify,
+	loggedInVerify,
 	classroomController.update_classwork_submissioin_patch
 ); /** update classwork @method PATCH @endpoint `api/classroom/:classId/classworks/:classId/:submissionId/update`*/
 

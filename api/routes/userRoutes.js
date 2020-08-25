@@ -1,6 +1,6 @@
 const userRouter = require("express").Router();
 const userController = require("../controllers/userControllers");
-const { privateVerify } = require("../middleware/privateVerify");
+const { loggedInVerify } = require("../middleware/loggedInVerify");
 const { imagesUpload } = require("../middleware/fileUpload");
 //
 //
@@ -9,10 +9,10 @@ userRouter.get("/", userController.users_get);
 userRouter.get("/:userId", userController.user_detail_get);
 userRouter.post("/userGroup", userController.group_users_post);
 
-userRouter.patch("/:userId/profile/edit", privateVerify, userController.update_user_patch);
+userRouter.patch("/:userId/profile/edit", loggedInVerify, userController.update_user_patch);
 userRouter.patch(
 	"/:userId/image/upload",
-	privateVerify,
+	loggedInVerify,
 	imagesUpload,
 	userController.upload_user_images_patch
 );

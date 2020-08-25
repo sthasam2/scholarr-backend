@@ -11,13 +11,20 @@
  * submit_classwork_post
  * update_classwork_submissioin_patch
  */
+
+// models
 const Classroom = require("../models/Classroom");
+const User = require("../models/User");
+
+// middleware
 const {
 	createClassroomValidation,
 	updateClassroomValidation,
 } = require("../middleware/validation");
+
+// utility functions
 const { uniqueClassCode } = require("../utils/codeTokensGenerator");
-const User = require("../models/User");
+const { errorMessage, nonExistenceError } = require("../utils/errorMessages");
 
 //
 //
@@ -29,16 +36,17 @@ module.exports.classes_get = async (req, res) => {
 		// looping through each classroom doc
 		for await (const doc of Classroom.find()) {
 			classrooms.push({
+				//ids
 				_creatorId: doc._creatorId,
 				_classId: doc._id,
-
+				//classroom info
 				classCode: doc.classCode,
 				className: doc.className,
 				classDescription: doc.classDescription,
-
+				// members
 				classMembers: doc.classMembers,
 				classWorks: doc.classWorks,
-
+				// dates
 				createdAt: doc.createdAt,
 				updatedAt: doc.updatedAt,
 			});
@@ -55,14 +63,7 @@ module.exports.class_detail_get = async (req, res) => {
 	try {
 		const classroomFound = await Classroom.findOne({ _id: req.params.classId });
 		console.log(classroomFound);
-		if (!classroomFound)
-			throw {
-				error: {
-					status: 404,
-					type: "Non-existence",
-					message: "Classroom associated with given id not found",
-				},
-			};
+		if (!classroomFound) throw nonExistenceError("classroom");
 
 		// check creator
 		const isCreator = req.user._id === classroomFound._creatorId;
@@ -72,14 +73,11 @@ module.exports.class_detail_get = async (req, res) => {
 		);
 
 		if (!(isCreator || isMember))
-			throw {
-				error: {
-					status: 401,
-					type: "Access-denied",
-					message:
-						"Cannot access classroom unless you are creator or a member of classroom.",
-				},
-			};
+			throw errorMessage(
+				401,
+				"Access-denied",
+				"To access this classroom you must either be a member or the creator"
+			);
 
 		const classroom = {
 			_id: classroomFound._id,
@@ -101,7 +99,54 @@ module.exports.class_detail_get = async (req, res) => {
 };
 
 module.exports.user_classes_get = async (req, res) => {
-	console.log("user_classes_get");
+	try {
+		const userFound = await User.findById(req.params.userId);
+		if (!userFound)
+			throw {
+				error: {
+					status: 400,
+					type: "Non-existence",
+					message: "Requested user does not exist",
+				},
+			};
+
+		const classesAttendingFound = await Classroom.find({
+			_id: { $in: userFound.classesAtending },
+		});
+		const classesTeachingFound = await Classroom.find({
+			_id: { $in: userFound.classesTeaching },
+		});
+
+		const attending = [];
+		const teaching = [];
+
+		for (let doc of classesAttendingFound) {
+			attending.push({
+				_creatorId: doc._creatorId,
+				_classId: doc._id,
+				classCode: doc.classCode,
+				className: doc.className,
+				classDescription: doc.classDescription,
+				classMembers: doc.classMembers,
+				classWorks: doc.classWorks,
+				createdAt: doc.createdAt,
+				updatedAt: doc.updatedAt,
+			});
+		}
+
+		// more info for teaching classes
+		for (let doc of classesTeachingFound) {
+			teaching.push(doc);
+		}
+
+		return res.status(200).send({
+			classesAttending: attending,
+			classesTeaching: teaching,
+		});
+	} catch (err) {
+		console.log(err);
+		return res.status(400).send(err);
+	}
 };
 
 /**
@@ -153,6 +198,7 @@ module.exports.create_class_post = async (req, res) => {
 
 		const classroom = new Classroom(classAttributes);
 		const savedClassroom = await classroom.save();
+		console.log(savedClassroom);
 
 		const updateUserInfo = await User.updateOne(
 			{ _id: req.user._id },
@@ -195,15 +241,7 @@ module.exports.update_class_patch = async (req, res) => {
 			};
 
 		const classroomFound = await Classroom.findOne({ _id: req.params.classId });
-
-		if (!classroomFound)
-			throw {
-				error: {
-					status: 404,
-					type: "Non-existence",
-					message: "Requested classroom not found",
-				},
-			};
+		if (!classroomFound) throw nonExistenceError("classroom");
 
 		const query = { $set: {} };
 		query.$set["updated"] = true;
@@ -235,19 +273,39 @@ module.exports.update_class_patch = async (req, res) => {
 //
 //
 // Classwork methods
+
+/** list view of classworks
+ * @method GET
+ */
 module.exports.classworks_get = async (req, res) => {
 	console.log("classwork_get");
 };
 
-module.exports.classwork_detail_get = async (req, res) => {
-	console.log("classwork_detail_get");
-};
-
+/** CREATE classwork
+ * @method POST
+ */
 module.exports.create_classwork_post = async (req, res) => {
 	console.log("create_classwork_post");
 };
 
+/** Read Detail view of a classroom
+ * @method GET
+ */
+module.exports.classwork_detail_get = async (req, res) => {
+	console.log("classwork_detail_get");
+};
+
+/** UPDATE classwork
+ * @method PATCH
+ */
 module.exports.update_classwork_patch = async (req, res) => {
+	console.log("update_classwork_patch");
+};
+
+/** DELETE classwork
+ * @method DELETE
+ */
+module.exports.classwork_delete = async (req, res) => {
 	console.log("update_classwork_patch");
 };
 
