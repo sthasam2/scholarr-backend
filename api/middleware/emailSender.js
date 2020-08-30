@@ -34,8 +34,6 @@ const verifyConnection = async () => {
 module.exports.confirmEmailSender = async (req, user, token) => {
 	await verifyConnection();
 
-	// console.log(`user: ${user}, \t token: ${token}`);
-
 	const message = {
 		from: process.env.GMAIL_USER,
 		to: req.body.email,

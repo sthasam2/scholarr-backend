@@ -269,9 +269,50 @@ module.exports.update_class_patch = async (req, res) => {
 		return res.status(400).send(err);
 	}
 };
-
+/**
+ *
+ */
 module.exports.class_delete = async (req, res) => {
-	console.log("class_delete");
+	try {
+		//find the classroom
+		const classroomFound = await Classroom.findById(req.params.classroomId);
+		if (!classroomFound) throw nonExistenceError("classroom");
+
+		//capture all the ids of attending users
+		const classroomMembers = classroomFound.classMembers.acceptedMembers;
+
+		//check if requesting(logged user) is creator of the classroom
+		if (req.user._id != classroomFound._creatorId)
+			throw {
+				error: {
+					status: 401,
+					type: "Access denied!",
+					message: "Only classroom creators can perform delete requests.",
+				},
+			};
+
+		//delete the classroom
+		await Classroom.deleteOne({ _id: req.params.classroomId });
+
+		//remove classroom ids from user
+		for (doc of classroomMembers) {
+			await User.updateOne(
+				{ _id: doc._memberId },
+				{ $pullAll: { classesAttending: req.params.classroomId } }
+			);
+		}
+
+		return res.send({
+			success: {
+				status: 202,
+				type: "Request Accepted",
+				message: "Classroom sucessfully deleted",
+			},
+		});
+	} catch (err) {
+		console.error("class_delete");
+		// res.status(400).send(err);
+	}
 };
 
 //

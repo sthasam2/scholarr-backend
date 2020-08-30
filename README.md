@@ -6,12 +6,18 @@ An online hub for **remote learning**.
 
 ## Changelogs
 
+-   ### v.0.3.1.2
+
+1. Added Classroom delete method
+2. Minor Bug fixes
+
 -   ### v.0.3.1.1
 
 1. Modified `privateVerify` to [loggedInVerify.js](api/middleware/loggedInVerify.js) since this seemed more appropriate according to function context
 2. Added end-point **(api/classrooms/users/:userId)**for getting all the classes associated with a user i.e. teaching and attending classes
 3. Added a new utility [errorMessage.js](api/utils/errorMessages.js) file to template out error message. The code got very repetetive so tried to implement DRY
 4. Added a new middleware [ownerVerify.js](api/middleware/ownerVerify.js) for checking ownership
+5. Bug Fixes
 
 -   ### v.0.3.1
 
