@@ -20,6 +20,7 @@ const User = require("../models/User");
 const {
 	createClassroomValidation,
 	updateClassroomValidation,
+	inviteUserValidate,
 } = require("../middleware/validation");
 
 // utility functions
@@ -203,7 +204,7 @@ module.exports.create_class_post = async (req, res) => {
 		const updateUserInfo = await User.updateOne(
 			{ _id: req.user._id },
 			{
-				$push: { classesTeaching: savedClassroom._id },
+				$push: { "classroom.classesTeaching": savedClassroom._id },
 			}
 		);
 
@@ -298,7 +299,7 @@ module.exports.class_delete = async (req, res) => {
 		for (doc of classroomMembers) {
 			await User.updateOne(
 				{ _id: doc._memberId },
-				{ $pullAll: { classesAttending: req.params.classroomId } }
+				{ $pullAll: { "classroom.classesAttending": req.params.classroomId } }
 			);
 		}
 
@@ -314,6 +315,45 @@ module.exports.class_delete = async (req, res) => {
 		// res.status(400).send(err);
 	}
 };
+
+//
+//
+// classroom members methods
+
+//invite
+/**
+ * Invite users to class
+ * @method POST body [ {userId: , username: , email: } ]
+ * NOTE: You can use any of the attributes just make sure to use one
+ */
+module.exports.classroom_invite_post = (req, res) => {
+	try {
+		if (!req.user.userId && !req.user.username && !req.user.email)
+			throw {
+				errro: {
+					status: 400,
+					type: "Request Error",
+					message: "Request body does not have any of the required fields",
+				},
+			};
+
+		const { error } = inviteUserValidate(req.body);
+		if (error)
+			throw {
+				error: {
+					error: {
+						type: "Req.body Validation error",
+						message: error.details[0].message,
+					},
+				},
+			};
+	} catch (err) {}
+};
+//invited members
+//request
+//requested members
+//accept
+//accepted members
 
 //
 //

@@ -1,6 +1,6 @@
 # SCHOLARR
 
-[![Version badge](https://img.shields.io/badge/Version-v.0.3.1-green.svg)](https://shields.io/) [![Version badge](https://img.shields.io/badge/Build-testing-red.svg)](https://shields.io/)
+[![Version badge](https://img.shields.io/badge/Version-v.0.3.2.1-green.svg)](https://shields.io/) [![Version badge](https://img.shields.io/badge/Build-testing-red.svg)](https://shields.io/)
 
 An online hub for **remote learning**.
 
@@ -11,6 +11,12 @@ An online hub for **remote learning**.
 1. Frontend separated from the backend.
 2. deployed to heroku(https://tranquil-woodland-86159.herokuapp.com/).
 3. minor bug fixes.
+
+-   ### v.0.3.1.3
+
+1. Modified email sender
+2. Minor Bug fixes
+3. Added some documentaion
 
 -   ### v.0.3.1.2
 

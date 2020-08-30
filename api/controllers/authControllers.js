@@ -38,6 +38,7 @@ const {
 // emailer
 const {
 	confirmEmailSender,
+	emailVerifiedEmailSender,
 	resetPasswordEmailSender,
 	deleteAccountEmailSender,
 } = require("../middleware/emailSender");
@@ -276,12 +277,12 @@ module.exports.email_confirmation_handler_get = async (req, res) => {
 			};
 
 		// Verify the user
-		const updatedUser = await User.updateOne(
-			{ _id: userExists._id },
-			{ $set: { isEmailVerified: true } }
-		);
+		await User.updateOne({ _id: userExists._id }, { $set: { isEmailVerified: true } });
 
-		res.status(200).send({
+		const mailResponse = await emailVerifiedEmailSender(userFound);
+		if (mailResponse) throw mailResponse;
+
+		return res.status(200).send({
 			message: `Your email: ${userExists.email} has been verified. Now you can use this to login`,
 		});
 	} catch (error) {
@@ -337,7 +338,7 @@ module.exports.resend_email_confirmation_post = async (req, res) => {
 		});
 	} catch (error) {
 		console.error(error);
-		return res.status(400).send({ ...error, status: "error" });
+		return res.status(400).json({ ...error, status: "error" });
 	}
 };
 

@@ -93,3 +93,15 @@ module.exports.updateClassroomValidation = (data) => {
 
 	return schema.validate(data);
 };
+
+//
+module.exports.inviteUserValidate = (data) => {
+	const schema = Joi.array().items(
+		Joi.object({
+			userId: Joi.string(),
+			username: Joi.string(),
+			email: Joi.string(),
+		})
+	);
+	return schema.validate(data);
+};

@@ -67,18 +67,32 @@ const userSchema = mongoose.Schema({
 		data: { type: String, default: null },
 		contentType: { type: String, default: null },
 	},
-	classesTeaching: [
-		{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: "Classroom",
-		},
-	],
-	classesAttending: [
-		{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: "Classroom",
-		},
-	],
+	classroom: {
+		classesTeaching: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "Classroom",
+			},
+		],
+		classesAttending: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "Classroom",
+			},
+		],
+		classesInvited: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "Classroom",
+			},
+		],
+		classesRequested: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "Classroom",
+			},
+		],
+	},
 	lastUpdated: {
 		type: Date,
 		default: null,

@@ -1,35 +1,14 @@
 require("dotenv").config();
+const { transporter, verifyConnection } = require("../../config/nodemailer");
 const nodemailer = require("nodemailer");
 
-// transporter
-const transporter = nodemailer.createTransport({
-	host: "smtp.gmail.com",
-	port: 587,
-	auth: {
-		user: process.env.GMAIL_USER,
-		pass: process.env.GMAIL_PASS,
-	},
-});
-
-// verify connection
-const verifyConnection = async () => {
-	transporter.verify((error, success) => {
-		if (error) {
-			console.log(error);
-		} else {
-			console.log("Server is ready to send messages");
-		}
-	});
-};
-
-/** Email sender nodemailer module
+/**
+ * ### Email confirmation email sender
+ * @param {object} req Request object
+ * @param {object} user User mongodb document
+ * @param {*} token Token mongodb document
  *
- * @param1 req - request made
- * @param2 res - response to send
- * @param3 user - user model object
- * @param4 token - token model object
- *
- * @returns error
+ * @returns  {object} err
  */
 module.exports.confirmEmailSender = async (req, user, token) => {
 	await verifyConnection();
@@ -113,22 +92,100 @@ module.exports.confirmEmailSender = async (req, user, token) => {
 	}
 };
 
+/**
+ * ### Email verified email sender
+ * @param {object} req Request object
+ * @param {object} user User mongodb document
+ * @param {*} token Token mongodb document
+ *
+ * @returns  {object} err
+ */
+module.exports.emailVerifiedEmailSender = async (user) => {
+	await verifyConnection();
+
+	const message = {
+		from: process.env.GMAIL_USER,
+		to: user.email,
+		subject: "[Scholarr] Email verified",
+		html: `<html>
+                <head>
+                    <style>
+                    p.custom {
+                        font-family: "Muli", sans-serif;
+                        font-size: 20px;
+                        line-height: 1.5;
+                    }
+
+                    h1.custom {
+                        font-family: "Libre Baskerville", serif;
+                        font-size: 3em;
+                        font-weight: bold;
+                        justify-content: center;
+                    }
+
+                    div.container {
+                        margin: 10vh 5vw;
+                        display: flex;
+                        justify-content: center;
+                    }
+
+                    div.custom {
+                        padding: 35px;
+                        display: grid;
+                        border-style: solid;
+                        border-color: #000000;
+                        border-radius: 1em;
+                        min-width: 80%;
+                    }
+                </style>
+                </head>
+                <body>
+                    <link
+                    href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Muli:wght@400;700&display=swap"
+                    rel="stylesheet"
+                    />
+                    <div class="container">
+                        <div class="custom">
+                            <h1 class="custom">Confirm your e-mail address</h1>
+                            <p class="custom">
+                            Dear <strong>${user.username}</strong>,<br />
+                            Your'${user.email}'</strong> has been verified. Thank you for using our services. Please have a great time. 
+                            <br /><br />
+                            Sincerely,
+                            <br />
+                            <strong>
+                            The Scholarr Team
+                            </strong>
+                            </p>
+                        </div>
+                    </div>
+                </body>
+                </html>`,
+	};
+
+	// Send Message
+	try {
+		const success = await transporter.sendMail(message);
+		console.log("The verification email has been sent\nSuccess : " + success);
+	} catch (err) {
+		console.log("An error occured");
+		return err;
+	}
+};
+
 //
 //
 // RESET PASSWORD EMAIL SENDER
-/** Email sender nodemailer module
+/**
+ * ### Reset password Email sender
+ * @param {object} req Request object
+ * @param {object} user User mongodb document
+ * @param {*} token Token mongodb document
  *
- * @param1 req - request made
- * @param2 res - response to send
- * @param3 user - user model object
- * @param4 token - token model object
- *
- * @returns error
+ * @returns  {object} err
  */
 module.exports.resetPasswordEmailSender = async (req, user, token) => {
 	await verifyConnection();
-
-	// console.log(`user: ${user}, \t token: ${token}`);
 
 	const message = {
 		from: process.env.GMAIL_USER,
@@ -217,14 +274,13 @@ module.exports.resetPasswordEmailSender = async (req, user, token) => {
 //
 //
 // DELETE ACCOUNT EMAIL SENDER
-/** Email sender nodemailer module
+/**
+ * ### Account delete email sender
+ * @param {object} req Request object
+ * @param {object} user User mongodb document
+ * @param {*} token Token mongodb document
  *
- * @param1 req - request made
- * @param2 res - response to send
- * @param3 user - user model object
- * @param4 token - token model object
- *
- * @returns error
+ * @returns  {object} err
  */
 module.exports.deleteAccountEmailSender = async (req, user, token) => {
 	await verifyConnection();

@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const { nonExistenceError } = require("../utils/errorMessages");
+const Classroom = require("../models/Classroom");
 
 /**
  *  ### NOTE: Strictly use this middleware after _loggedInVerify_ middleware
@@ -54,6 +55,49 @@ module.exports.accountOwnerVerify = async (req, res, next) => {
 	}
 };
 
-module.exports.classroomOwnerVerify = (req, res, next) => {};
+module.exports.classroomOwnerVerify = async (req, res, next) => {
+	try {
+		// check logged in
+		if (!req.user._id)
+			throw {
+				error: {
+					status: 400,
+					type: "Request body error",
+					message:
+						"Request does not contain a 'req.user'. \n Possible solutions: \t 1. include a 'req.user._id' \n\t 2. [backend] Use this middleware after 'loggedInVerify' middleware",
+				},
+			};
+
+		// check if classroomId parameter available in url endpoints
+		if (!req.params.classroomId)
+			throw {
+				error: {
+					status: 400,
+					type: "Request End-point error",
+					message:
+						"Request does not contain a 'req.params.userId' in the url end-point. \n Possible solutions: \t 1. Check the url end point to make sure it is correct",
+				},
+			};
+
+		const classroomFound = await Classroom.findOne({ _id: req.params.classroomId });
+		if (!classroomFound) throw nonExistenceError("classroom");
+
+		//check logged in user is the owner of classroom
+		if (req.user._id != classroomFound._creatorId)
+			throw {
+				error: {
+					status: 401,
+					type: "Access Denied!",
+					message: "You do not have permission for access! Only owners may get access.",
+				},
+			};
+
+		// go to next middleware
+		next();
+	} catch (err) {
+		console.error(err);
+		res.status(400).send(err);
+	}
+};
 
 module.exports.classMemberVerify = (req, res, next) => {};
