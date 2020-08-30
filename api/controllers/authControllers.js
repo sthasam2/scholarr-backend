@@ -202,32 +202,44 @@ module.exports.login_post = async (req, res) => {
 		const userFound = await User.findOne({ email: req.body.email });
 		if (!userFound)
 			throw {
-				error: { type: "Non-existence", message: "Email not found!" },
+				error: {
+					type: "Non-existence",
+					message: "Email not found!",
+					location: "email",
+				},
 			};
 
 		// check email verified
 		if (!userFound.isEmailVerified)
 			throw {
-				error: { type: "Access denied", message: "Email is not verified!" },
+				error: {
+					type: "Access denied",
+					message: "Email is not verified!",
+					location: "email",
+				},
 			};
 
 		// Check password
 		const validPass = await bcrypt.compare(req.body.password, userFound.password);
 		if (!validPass)
 			throw {
-				error: { type: "Authentication failure", message: "Wrong Password." },
+				error: {
+					type: "Authentication failure",
+					message: "Wrong Password.",
+					location: "password",
+				},
 			};
 
 		// assign web token
 		const token = jwt.sign({ _id: userFound._id }, process.env.TOKEN_SECRET);
 		res.header(`auth-token`, token).status(202).send({
-			status: "Success",
+			status: "success",
 			message: "Login Successful",
 			token: token,
 		});
-	} catch (err) {
-		console.error(err);
-		return res.status(400).send(err);
+	} catch (error) {
+		console.error(error);
+		return res.status(400).send({ ...error, status: "error" });
 	}
 };
 
@@ -273,8 +285,8 @@ module.exports.email_confirmation_handler_get = async (req, res) => {
 			message: `Your email: ${userExists.email} has been verified. Now you can use this to login`,
 		});
 	} catch (error) {
-		console.error(err);
-		return res.status(400).json(error);
+		console.error(error);
+		return res.status(400).json({ ...error, status: "error" });
 	}
 };
 
@@ -324,8 +336,8 @@ module.exports.resend_email_confirmation_post = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error(err);
-		return res.status(400).send(error);
+		console.error(error);
+		return res.status(400).send({ ...error, status: "error" });
 	}
 };
 
@@ -374,8 +386,8 @@ module.exports.reset_password_email_post = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error(err);
-		return res.status(400).send(error);
+		console.error(error);
+		return res.status(400).send({ ...error, status: "error" });
 	}
 };
 
@@ -421,8 +433,8 @@ module.exports.reset_password_get = async (req, res) => {
 		// for password reset or not depending on the response. if you get a
 		// token display the form, if not display error
 	} catch (error) {
-		console.error(err);
-		return res.status(400).send(error);
+		console.error(error);
+		return res.status(400).send({ ...error, status: "error" });
 	}
 };
 
@@ -476,8 +488,8 @@ module.exports.reset_password_handler_patch = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error(err);
-		return res.status(400).json(error);
+		console.error(error);
+		return res.status(400).json({ ...error, status: "error" });
 	}
 };
 
@@ -531,8 +543,8 @@ module.exports.delete_account_email_post = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error(err);
-		return res.status(400).send(error);
+		console.error(error);
+		return res.status(400).send({ ...error, status: "error" });
 	}
 };
 
@@ -574,8 +586,8 @@ module.exports.delete_account_get = async (req, res) => {
 		// for password reset or not depending on the response. if you get a
 		// token display the form, if not display error
 	} catch (error) {
-		console.error(err);
-		return res.status(400).send(error);
+		console.error(error);
+		return res.status(400).send({ ...error, status: "error" });
 	}
 };
 
@@ -624,7 +636,7 @@ module.exports.delete_account_handler_delete = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error(err);
-		return res.status(400).json(error);
+		console.error(error);
+		return res.status(400).json({ ...error, status: "error" });
 	}
 };

@@ -6,6 +6,12 @@ An online hub for **remote learning**.
 
 ## Changelogs
 
+-   ### v.0.3.2.1
+
+1. Frontend separated from the backend.
+2. deployed to heroku(https://tranquil-woodland-86159.herokuapp.com/).
+3. minor bug fixes.
+
 -   ### v.0.3.1.2
 
 1. Added Classroom delete method

@@ -32,7 +32,9 @@ app.use("/api", apiRouter); // (@param1: route, @param2 handler)
 
 // SERVER ---
 const PORT = process.env.PORT || process.argv[2] || 4000;
-const server = app.listen(PORT, "0.0.0.0", () => console.log(`Server running at ${PORT}.`));
+const server = app.listen(PORT, "0.0.0.0", () =>
+  console.log(`Server running at ${PORT}.`)
+);
 // server ---
 
 // SOCKETS ---
@@ -43,10 +45,10 @@ const video = io.of("/video");
 
 // connection handlers
 text.on("connection", (socket) =>
-	console.log(`Socket connection made. Namespace:Chat, ID: ${socket.id}`)
+  console.log(`Socket connection made. Namespace:Chat, ID: ${socket.id}`)
 );
 
 video.on("connection", (socket) =>
-	console.log(`Socket connection made. Namespace:VideoChat, ID: ${socket.id}`)
+  console.log(`Socket connection made. Namespace:VideoChat, ID: ${socket.id}`)
 );
 // sockets ---
