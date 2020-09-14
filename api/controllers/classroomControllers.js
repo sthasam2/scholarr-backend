@@ -4,12 +4,6 @@
  * user_classes_get
  * create_class_post
  * update_class_patch
- * classworks_get
- * classwork_detail_get
- * create_classwork_post
- * update_classwork_patch
- * submit_classwork_post
- * update_classwork_submissioin_patch
  */
 
 // models
@@ -25,7 +19,29 @@ const {
 
 // utility functions
 const { uniqueClassCode } = require("../utils/codeTokensGenerator");
-const { errorMessage, nonExistenceError } = require("../utils/errorMessages");
+const {
+	errorMessage,
+	nonExistenceError,
+	validationError,
+	alreadyMemberError,
+	noMemberFoundError,
+	notInvitedError,
+	notRequestedError,
+} = require("../utils/errorMessages");
+const { inviteClassroomEmail } = require("../middleware/classroomEmails");
+
+//CUSTOM ENUM
+const memberType = {
+	INVITED: "Invited User",
+	REQUESTING: "Requesting User",
+	ENROLLED: "Enrolled User",
+};
+
+const membershipActionType = {
+	INVITE: "Invitation",
+	REQUEST: "Request",
+	ENROLL: "Enrollment",
+};
 
 //
 //
@@ -47,9 +63,6 @@ module.exports.classes_get = async (req, res) => {
 				// members
 				classMembers: doc.classMembers,
 				classWorks: doc.classWorks,
-				// dates
-				createdAt: doc.createdAt,
-				updatedAt: doc.updatedAt,
 			});
 		}
 
@@ -69,7 +82,7 @@ module.exports.class_detail_get = async (req, res) => {
 		// check creator
 		const isCreator = req.user._id === classroomFound._creatorId;
 		// check member
-		const isMember = classroomFound.classMembers.acceptedMembers.some(
+		const isMember = classroomFound.classMembers.enrolledMembers.some(
 			(doc) => doc._memberId === req.user._id
 		);
 
@@ -83,12 +96,11 @@ module.exports.class_detail_get = async (req, res) => {
 		const classroom = {
 			_id: classroomFound._id,
 			createdAt: classroomFound.createdAt,
-			updated: classroomFound.updated,
 			updatedAt: classroomFound.updatedAt,
 			className: classroomFound.classroomName,
 			classDescription: classroomFound.classroomDescription,
 			classCode: classroomFound.classroomCode,
-			classMembers: classroomFound.classroomMembers.acceptedMembers,
+			classMembers: classroomFound.classroomMembers.enrolledMembers,
 			classWorks: classroomFound.classWorks,
 		};
 
@@ -166,22 +178,11 @@ module.exports.create_class_post = async (req, res) => {
 				},
 			};
 
-		// check if req.user exists
-		const userFound = await User.findById(req.user._id);
-		if (!userFound) {
-			throw {
-				error: {
-					status: 404,
-					type: "Non-existence",
-					message: "Requesting user not found",
-				},
-			};
-		}
-
 		// check uniqueness of class code
+		let code = null;
 		let unique = false;
 		while (unique === false) {
-			let code = uniqueClassCode();
+			code = uniqueClassCode();
 			let classFound = await Classroom.findOne({ classCode: code });
 			if (classFound) unique = false;
 			else unique = true;
@@ -190,18 +191,18 @@ module.exports.create_class_post = async (req, res) => {
 		let classAttributes = {};
 		// required fields created in backend
 		classAttributes["_creatorId"] = req.user._id;
-		classAttributes["classCode"] = uniqueClassCode();
+		classAttributes["classCode"] = code;
 
 		// since all fields are not required, only those requested are added
 		for (let key in req.body) {
 			classAttributes[key] = req.body[key];
 		}
 
-		const classroom = new Classroom(classAttributes);
-		const savedClassroom = await classroom.save();
-		console.log(savedClassroom);
+		// const classroom = new Classroom(classAttributes);
+		// const savedClassroom = await classroom.save();
+		const savedClassroom = await new Classroom(classAttributes).save();
 
-		const updateUserInfo = await User.updateOne(
+		await User.updateOne(
 			{ _id: req.user._id },
 			{
 				$push: { "classroom.classesTeaching": savedClassroom._id },
@@ -244,16 +245,14 @@ module.exports.update_class_patch = async (req, res) => {
 		const classroomFound = await Classroom.findOne({ _id: req.params.classId });
 		if (!classroomFound) throw nonExistenceError("classroom");
 
-		const query = { $set: {} };
-		query.$set["updated"] = true;
-		query.$set["updatedAt"] = Date.now();
+		const updateQuery = { $set: {} };
 
 		for (let key in req.body) {
 			if (classroomFound[key] && classroomFound[key] != req.body[key])
-				query.$set[key] = req.body[key];
+				updateQuery.$set[key] = req.body[key];
 		}
 
-		await Classroom.updateOne({ _id: classroomFound._id }, query);
+		await Classroom.updateOne({ _id: classroomFound._id }, updateQuery);
 
 		return res.status(200).send({
 			Success: {
@@ -270,6 +269,7 @@ module.exports.update_class_patch = async (req, res) => {
 		return res.status(400).send(err);
 	}
 };
+
 /**
  *
  */
@@ -280,7 +280,7 @@ module.exports.class_delete = async (req, res) => {
 		if (!classroomFound) throw nonExistenceError("classroom");
 
 		//capture all the ids of attending users
-		const classroomMembers = classroomFound.classMembers.acceptedMembers;
+		const classroomMembers = classroomFound.classMembers.enrolledMembers;
 
 		//check if requesting(logged user) is creator of the classroom
 		if (req.user._id != classroomFound._creatorId)
@@ -293,17 +293,31 @@ module.exports.class_delete = async (req, res) => {
 			};
 
 		//delete the classroom
-		await Classroom.deleteOne({ _id: req.params.classroomId });
+		await Classroom.deleteOne({ _id: classroomFound._id });
 
 		//remove classroom ids from user
 		for (doc of classroomMembers) {
 			await User.updateOne(
 				{ _id: doc._memberId },
-				{ $pullAll: { "classroom.classesAttending": req.params.classroomId } }
+				{
+					$pull: {
+						"classroom.classesAttending": classroomFound._id,
+						"classroom.classesInvited": classroomFound._id,
+						"classroom.classesRequested": classroomFound._id,
+					},
+				}
 			);
+			// await User.updateOne(
+			// 	{ _id: doc._memberId },
+			// 	{ $pullAll: { "classroom.classesInvited": classroomFound._id } }
+			// );
+			// await User.updateOne(
+			// 	{ _id: doc._memberId },
+			// 	{ $pullAll: { "classroom.classesRequested": classroomFound._id } }
+			// );
 		}
 
-		return res.send({
+		return res.status(202).send({
 			success: {
 				status: 202,
 				type: "Request Accepted",
@@ -311,24 +325,78 @@ module.exports.class_delete = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error("class_delete");
-		// res.status(400).send(err);
+		console.error(err);
+		return res.status(400).send(err);
 	}
 };
 
 //
 //
-// classroom members methods
+// ! classroom members methods
+
+/**
+ *
+ * @param {object} req
+ * @param {object} res
+ * @param {string} memberType
+ */
+const getMemberList = async (req, res, reqMemberType) => {
+	try {
+		const classroomFound = await Classroom.findOne({ _id: req.params.classroomId });
+		if (!classroomFound) throw nonExistenceError("classroom");
+
+		const users = [];
+		const errorUsers = [];
+		const memberArray = null;
+
+		if (reqMemberType === memberType.INVITED)
+			memberArray = classroomFound.classMembers.invitedMembers;
+		else if (reqMemberType === memberType.REQUESTING)
+			memberArray = classroomFound.classMembers.memberRequest;
+		else if (reqMemberType === memberType.ENROLLED)
+			memberArray = classroomFound.classMembers.enrolledMembers;
+
+		for (let doc of memberArray) {
+			const userFound = await User.findById(doc);
+
+			if (!userFound) errorUsers.push(doc);
+			else
+				users.push({
+					_id: userFound._id,
+					username: userFound.username,
+					email: userFound.email,
+					displayName: `${userFound.firstName} ${userFound.lastName}`,
+					bio: userFound.bio,
+					avatarImage: userFound.avatarImage,
+					coverImage: userFound.coverImage,
+				});
+		}
+
+		return res.status(200).send({
+			success: {
+				status: 200,
+				type: "Request Successful",
+				message: `${reqMemberType} from ${classroomFound.className}(_id:${classroomFound._id} obtained`,
+				memberType: reqMemberType,
+				users: users,
+			},
+		});
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
+};
 
 //invite
 /**
- * Invite users to class
+ * Invite bulk users to class
  * @method POST body [ {userId: , username: , email: } ]
  * NOTE: You can use any of the attributes just make sure to use one
  */
-module.exports.classroom_invite_post = (req, res) => {
+module.exports.classroom_bulk_invite_post = async (req, res) => {
 	try {
-		if (!req.user.userId && !req.user.username && !req.user.email)
+		//check req.body
+		if (!req.body.userId && !req.body.username && !req.body.email)
 			throw {
 				errro: {
 					status: 400,
@@ -337,70 +405,443 @@ module.exports.classroom_invite_post = (req, res) => {
 				},
 			};
 
+		// validate if fields are string
 		const { error } = inviteUserValidate(req.body);
-		if (error)
+		if (error) throw validationError(error);
+
+		// check if classroom exists
+		const classroomFound = await Classroom.findById(req.params.classroomId);
+		if (!classroomFound) throw nonExistenceError("classroom");
+
+		//classroom creator details
+		const classroomCreator = req.user;
+		// const classroomCreator = await User.findById(classroomFound._creatorId);
+
+		// get the list of users
+		let users = [];
+		let errorUsers = [];
+
+		// handle each user from req.body ie add them to invited members etc
+		for (doc of req.body) {
+			const userFound = await User.findOne({
+				$or: [{ _id: doc.userId }, { username: doc.username }, { email: doc.email }],
+			});
+			if (!userFound) errorUser.push(doc);
+			else {
+				// update user details
+				await User.updateOne(
+					{ _id: userFound.id },
+					{ $push: { "classroom.classesInvited": classroomFound._id } }
+				);
+
+				// update classroom details
+				await Classroom.updateOne(
+					{ _id: classroomFound._id },
+					{ $push: { "classMembers.invitedmembers": userFound._id } }
+				);
+
+				users.push({
+					_id: userFound.id,
+					username: userFound.username,
+					email: userFound.email,
+				});
+			}
+		}
+
+		const classroomDetails = {
+			_id: classroomFound._id,
+			_creatorId: classroomFound._creatorId,
+			creatorUsername: classroomCreator.username,
+			className: classroomFound.className,
+			classCode: classroomFound.classCode,
+		};
+
+		let userEmails = [];
+		for (let doc of users) userEmails.push(doc.email);
+
+		//send emails
+		const mailResponse = await inviteClassroomEmail(req, classroomDetails, userEmails);
+		if (mailResponse) throw mailResponse;
+
+		return res.status(200).send({
+			Success: {
+				status: 200,
+				type: "Request Successful",
+				message: "Invitation successfully sent!",
+				invitedUsers: users,
+				unsuccessfulInvites: errorUsers,
+			},
+		});
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
+};
+
+/**
+ * Invite single user to class
+ * @method POST body [ {userId: , username: , email: } ]
+ * NOTE: You can use any of the attributes just make sure to use one
+ */
+module.exports.classroom_invite_post = async (req, res) => {
+	try {
+		//check req.body
+		if (!req.body.userId && !req.body.username && !req.body.email)
 			throw {
-				error: {
-					error: {
-						type: "Req.body Validation error",
-						message: error.details[0].message,
-					},
+				errro: {
+					status: 400,
+					type: "Request Error",
+					message: "Request body does not have any of the required fields",
 				},
 			};
-	} catch (err) {}
+
+		// validate if fields are string
+		const { error } = inviteUserValidate(req.body);
+		if (error) throw validationError(error);
+
+		// check if classroom exists
+		const classroomFound = req.customField.classroom;
+		// const classroomFound = await Classroom.findById(req.params.classroomId);
+		// if (!classroomFound) throw nonExistenceError("classroom");
+
+		//classroom creator details
+		const classroomCreator = req.user;
+		// const classroomCreator = await User.findById(classroomFound._creatorId);
+
+		const userFound = await User.findOne({
+			$or: [{ _id: doc.userId }, { username: doc.username }, { email: doc.email }],
+		});
+		if (!userFound) throw nonExistenceError("invited user");
+
+		// update user details
+		await User.updateOne(
+			{ _id: userFound.id },
+			{ $push: { "classroom.classesInvited": classroomFound._id } }
+		);
+
+		// update classroom details
+		await Classroom.updateOne(
+			{ _id: classroomFound._id },
+			{ $push: { "classMembers.invitedmembers": userFound._id } }
+		);
+
+		const classroomDetails = {
+			_id: classroomFound._id,
+			_creatorId: classroomFound._creatorId,
+			creatorUsername: classroomCreator.username,
+			className: classroomFound.className,
+			classCode: classroomFound.classCode,
+		};
+
+		const userDetails = {
+			_id: userFound._id,
+			username: userFound.username,
+			email: userFound.email,
+		};
+
+		//send emails
+		const mailResponse = await inviteClassroomEmail(req, classroomDetails, userDetails);
+		if (mailResponse) throw mailResponse;
+
+		return res.status(200).send({
+			Success: {
+				status: 200,
+				type: "Request Successful",
+				message: "Invitation successfully sent!",
+				invitedUser: userDetails,
+			},
+		});
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
 };
+
 //invited members
-//request
-//requested members
+module.exports.invited_members_get = async (req, res) => {
+	await getMemberList(req, res, memberType.INVITED);
+};
+
+//accept invite
+module.exports.accept_invite_get = async (req, res) => {
+	try {
+		//check user exists
+		const userFound = await User.findById(req.params.userId);
+		if (!userFound) throw nonExistenceError("User");
+
+		//find classroom
+		const classroomFound = await Classroom.findById(req.params.classroomId);
+		if (!classroomFound) throw nonExistenceError("classroom");
+
+		//check invited and not member
+		const member = classroomFound.classMembers.enrolledMembers.some(
+			(doc) => userFound._id === doc
+		);
+		if (member) throw alreadyMemberError;
+
+		const invited = classroomFound.classMembers.invitedMembers.some(
+			(doc) => userFound._id === doc
+		);
+		if (!invited) throw notInvitedError;
+
+		// update classroom details
+		await Classroom.updateOne(
+			{ _id: classroomFound._id },
+			{ $push: { "classMembers.enrolledMembers": userFound._id } }
+		);
+		await Classroom.updateOne(
+			{ _id: classroomFound._id },
+			{ $pull: { "classMembers.invitedMembers": userFound._id } }
+		);
+
+		// update user details
+		await User.updateOne(
+			{ _id: userFound._id },
+			{ $push: { "classroom.classesAttending": classroomFound._id } }
+		);
+		await User.updateOne(
+			{ _id: userFound._id },
+			{ $pull: { "classroom.classesInvited": classroomFound._id } }
+		);
+
+		return res.status(200).send({
+			Success: {
+				status: 200,
+				type: "Request Successful",
+				message: "Invitation Accepted!",
+				classroom: { _id: classroomFound._id, className: classroomFound.className },
+			},
+		});
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
+};
+
+//reject invite
+
+//request via class code
+/**
+ * body { classCode: ,}
+ */
+module.exports.classroom_request_post = async (req, res) => {
+	try {
+		// validate if fields are string
+		const { error } = classroomRequestValidate(req.body);
+		if (error) throw validationError(error);
+
+		// check if classroom exists
+		const classroomFound = await Classroom.findOne({ classCode: req.body.classCode });
+		if (!classroomFound) throw nonExistenceError("classroom");
+
+		const requestingUser = req.user; //strictly use this after loggedUserExistsVerify
+
+		// update classroom details
+		await Classroom.updateOne(
+			{ _id: classroomFound._id },
+			{ $push: { "classMembers.memberRequest": requestingUser._id } }
+		);
+
+		// update user details
+		await User.updateOne(
+			{ _id: requestingUser.id },
+			{ $push: { "classroom.classesRequested": classroomFound._id } }
+		);
+
+		const classroomDetails = {
+			_id: classroomFound._id,
+			_creatorId: classroomFound._creatorId,
+			creatorUsername: classroomCreator.username,
+			className: classroomFound.className,
+			classCode: classroomFound.classCode,
+		};
+
+		//send emails
+		// const mailResponse = await inviteClassroomEmail(req, classroomDetails, userDetails);
+		// if (mailResponse) throw mailResponse;
+
+		return res.status(200).send({
+			Success: {
+				status: 200,
+				type: "Request Successful",
+				message: "Request for classroom successfully sent!",
+				requestedClassroom: classroomDetails,
+			},
+		});
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
+};
+
+//requesting members
+module.exports.member_request_get = async (req, res) => {
+	await getMemberList(req, res, memberType.REQUESTING);
+};
+
 //accept
-//accepted members
+module.exports.accept_request_get = async (req, res) => {
+	try {
+		//check user exists
+		const userToAccept = await User.findById(req.params.userId);
+		if (!userToAccept) throw nonExistenceError("User");
 
-//
-//
-// Classwork methods
+		//find classroom
+		const classroomFound = req.customField.classroom;
 
-/** list view of classworks
- * @method GET
- */
-module.exports.classworks_get = async (req, res) => {
-	console.log("classwork_get");
+		//check requested and not member
+		const member = classroomFound.classMembers.enrolledMembers.some(
+			(doc) => userToAccept._id === doc
+		);
+		if (member) throw alreadyMemberError;
+
+		const requested = classroomFound.classMembers.memberRequest.some(
+			(doc) => userToAccept._id === doc
+		);
+		if (!requested) throw notRequestedError;
+
+		// update classroom details
+		await Classroom.updateOne(
+			{ _id: classroomFound._id },
+			{ $push: { "classMembers.enrolledMembers": userToAccept._id } }
+		);
+		await Classroom.updateOne(
+			{ _id: classroomFound._id },
+			{ $pull: { "classMembers.memberRequest": userToAccept._id } }
+		);
+
+		// update user details
+		await User.updateOne(
+			{ _id: userToAccept._id },
+			{ $push: { "classroom.classesAttending": classroomFound._id } }
+		);
+		await User.updateOne(
+			{ _id: userToAccept._id },
+			{ $pullAll: { "classroom.classesRequested": classroomFound._id } }
+		);
+
+		return res.status(200).send({
+			Success: {
+				status: 200,
+				type: "Request Successful",
+				message: "Member Request Accepted!",
+				classroom: { _id: classroomFound._id, className: classroomFound.className },
+			},
+		});
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
 };
 
-/** CREATE classwork
- * @method POST
- */
-module.exports.create_classwork_post = async (req, res) => {
-	console.log("create_classwork_post");
+//enrolled members
+module.exports.enrolled_members_get = async (req, res) => {
+	getMemberList(req, res, memberType.ENROLLED);
 };
 
-/** Read Detail view of a classroom
- * @method GET
- */
-module.exports.classwork_detail_get = async (req, res) => {
-	console.log("classwork_detail_get");
+//delete
+// general fxn
+const removeMembers = async (req, res, membershipAction) => {
+	try {
+		const classroomToRemoveFrom = await Classroom.findById(req.params.classroomId);
+		if (!classroomToRemoveFrom) throw nonExistenceError("classroom");
+
+		const memberToRemove = await User.findById(req.params.userId);
+		if (!memberToRemove) throw nonEcistenceError("user");
+
+		// for invitations
+		if (membershipAction === membershipActionType.INVITE) {
+			if (
+				classroomToRemoveFrom.classMembers.invitedMember.some(
+					(doc) => memberToRemove._id === doc
+				)
+			) {
+				await Classroom.updateOne(
+					{ _id: classroomToRemoveFrom._id },
+					{ $pull: { "classMembers.invitedMembers": memberToRemove._id } }
+				);
+				await User.updateOne(
+					{ _id: memberToRemove._id },
+					{ $pull: { "classroom.classesInvited": classroomToRemoveFrom._id } }
+				);
+			} else {
+				throw noMemberFoundError;
+			}
+		}
+		// for membership request
+		else if (membershipAction === membershipActionType.REQUEST) {
+			if (
+				classroomToRemoveFrom.classMembers.memberRequest.some(
+					(doc) => memberToRemove._id === doc
+				)
+			) {
+				await Classroom.updateOne(
+					{ _id: classroomToRemoveFrom._id },
+					{ $pull: { "classMembers.memberRequest": memberToRemove._id } }
+				);
+				await User.updateOne(
+					{ _id: memberToRemove._id },
+					{ $pull: { "classroom.classesRequested": classroomToRemoveFrom._id } }
+				);
+			} else {
+				throw noMemberFoundError;
+			}
+		}
+		// for enrollments
+		else if (membershipAction === membershipActionType.ACCEPT) {
+			if (
+				classroomToRemoveFrom.classMembers.enrolledMember.some(
+					(doc) => memberToRemove._id === doc
+				)
+			) {
+				await Classroom.updateOne(
+					{ _id: classroomToRemoveFrom._id },
+					{ $pull: { "classMembers.enrolledMembers": memberToRemove._id } }
+				);
+				await User.updateOne(
+					{ _id: memberToRemove._id },
+					{ $pull: { "classroom.classesAttending": classroomToRemoveFrom._id } }
+				);
+			} else {
+				throw noMemberFoundError;
+			}
+		}
+
+		return res.status(200).send({
+			success: {
+				status: 200,
+				type: "Request Success!",
+				message: "Member removed sucessfully",
+				targetAction: membershipAction,
+				user: {
+					_id: memberToRemove._id,
+					username: memberToRemove.username,
+					email: memberToRemove.email,
+				},
+				classroom: {
+					_id: classroomToRemoveFrom._id,
+					classCode: classroomToRemoveFrom.classCode,
+					className: classroomToRemoveFrom.className,
+				},
+			},
+		});
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
 };
 
-/** UPDATE classwork
- * @method PATCH
- */
-module.exports.update_classwork_patch = async (req, res) => {
-	console.log("update_classwork_patch");
+//invite
+module.exports.remove_invitation_get = async (req, res) => {
+	await removeMembers(req, res, membershipActionType.INVITE);
 };
 
-/** DELETE classwork
- * @method DELETE
- */
-module.exports.classwork_delete = async (req, res) => {
-	console.log("update_classwork_patch");
+//request
+module.exports.remove_request_get = async (req, res) => {
+	await removeMembers(req, res, membershipActionType.REQUEST);
 };
 
-//
-//
-// Classwork submisssions
-module.exports.submit_classwork_post = async (req, res) => {
-	console.log("submit_classwork_post");
-};
-
-module.exports.update_classwork_submissioin_patch = async (req, res) => {
-	console.log("update_classwork_submissioin_patch");
+//class membership
+module.exports.remove_enrollment_get = async (req, res) => {
+	await removeMembers(req, res, membershipActionType.ENROLL);
 };

@@ -74,8 +74,7 @@ module.exports.group_users_post = async (req, res) => {
 			};
 
 		const group = [];
-		for (let doc of users) {
-			console.log(doc);
+		for (let doc of users)
 			group.push({
 				_id: doc._id,
 				username: doc.username,
@@ -86,7 +85,6 @@ module.exports.group_users_post = async (req, res) => {
 				avatarImage: doc.avatarImage,
 				coverImage: doc.coverImage,
 			});
-		}
 
 		return res.status(200).send(group);
 	} catch (err) {
@@ -98,6 +96,25 @@ module.exports.group_users_post = async (req, res) => {
 //
 //
 // GET User Details
+module.exports.user_detail_private_get = async (req, res) => {
+	try {
+		// const userExists = await findOneUser(req.params.userId);
+		const userExists = await User.findOne({ _id: req.params.userId });
+		if (!userExists)
+			throw {
+				error: {
+					status: 404,
+					type: "Non-existence",
+					message: "The user does not exist",
+				},
+			};
+
+		return res.status(200).send(userExists);
+	} catch (err) {
+		console.error(err);
+		return res.status(400).send(err);
+	}
+};
 module.exports.user_detail_get = async (req, res) => {
 	try {
 		// const userExists = await findOneUser(req.params.userId);
@@ -155,14 +172,14 @@ module.exports.update_user_patch = async (req, res) => {
 			};
 
 		// Check if req user is owner of the user account to be updated
-		if (req.user._id != userFound._id)
-			throw {
-				error: {
-					status: 401,
-					type: "Access Denied!",
-					message: "You do not have permission to edit this!",
-				},
-			};
+		// if (req.user._id != userFound._id)
+		// 	throw {
+		// 		error: {
+		// 			status: 401,
+		// 			type: "Access Denied!",
+		// 			message: "You do not have permission to edit this!",
+		// 		},
+		// 	};
 
 		//check password
 		const validPass = await bcrypt.compare(req.body.password, userFound.password);
@@ -180,7 +197,7 @@ module.exports.update_user_patch = async (req, res) => {
 		}
 
 		// update the profile
-		const updatedProfile = await User.updateOne(
+		await User.updateOne(
 			{
 				_userId: req.user._id,
 			},
