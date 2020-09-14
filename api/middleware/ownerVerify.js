@@ -31,14 +31,6 @@ module.exports.accountOwnerVerify = async (req, res, next) => {
 		if (!paramUserFound) throw nonExistenceError("user");
 
 		//check logged in user is the requested user
-
-		// let id1 = toString(req.user._id);
-		// console.log(typeof id1);
-		// let id2 = toString(paramUserFound._id);
-		// console.log(typeof id2);
-
-		// const isParamUserReqUser = id1 == id2;
-
 		if (req.user._id.toString() != paramUserFound._id.toString()) throw ownerAccessDenailError;
 
 		req.user = paramUserFound;

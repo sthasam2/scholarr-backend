@@ -63,7 +63,6 @@ module.exports.deleteAccountValidation = (data) => {
 // UPDATE user
 module.exports.updateUserValidation = (data) => {
 	const schema = Joi.object({
-		_id: Joi.string().required(),
 		firstName: Joi.string().max(100),
 		middleName: Joi.string().max(100),
 		lastName: Joi.string().max(100),

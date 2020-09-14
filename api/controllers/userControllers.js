@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const { updateUserValidation } = require("../middleware/validation");
 // const { findOneUser } = require("../middleware/utilityFunctions");
 const { upload, imagesUpload } = require("../middleware/fileUpload");
+const { wrongPwError, validationError, nonExistenceError } = require("../utils/errorMessages");
 
 // const multer = require("multer");
 // const path = require("path");
@@ -115,6 +116,7 @@ module.exports.user_detail_private_get = async (req, res) => {
 		return res.status(400).send(err);
 	}
 };
+
 module.exports.user_detail_get = async (req, res) => {
 	try {
 		// const userExists = await findOneUser(req.params.userId);
@@ -148,63 +150,35 @@ module.exports.user_detail_get = async (req, res) => {
 
 /** //* Controls PROFILE UPDATE PATCH requests.
  *
- * PATCH body: { _id: , firstName: , middleName: , lastName: , bio: , dateOfBirth: , password: ,}
+ * PATCH body: { firstName: , middleName: , lastName: , bio: , dateOfBirth: , password: ,}
  */
 module.exports.update_user_patch = async (req, res) => {
 	try {
-		const { error } = updateUserValidation(req.body);
-		if (error)
-			throw {
-				error: {
-					message: error.details[0].message,
-				},
-			};
+		const { error } = await updateUserValidation(req.body);
+		if (error) throw validationError(error);
 
-		// console.log(req.user);
+		const userToUpdate = await await (await User.findOne({ _id: req.params.userId })).toJSON();
+		if (!userToUpdate) throw nonExistenceError("user");
 
-		const userFound = await User.findOne({ _id: req.params.userId });
-		if (!userFound)
-			throw {
-				error: {
-					status: 404,
-					message: "associated user not found",
-				},
-			};
+		const validPass = await bcrypt.compare(req.body.password, userToUpdate.password);
+		if (!validPass) throw wrongPwError;
 
-		// Check if req user is owner of the user account to be updated
-		// if (req.user._id != userFound._id)
-		// 	throw {
-		// 		error: {
-		// 			status: 401,
-		// 			type: "Access Denied!",
-		// 			message: "You do not have permission to edit this!",
-		// 		},
-		// 	};
+		// update only supplied fields
+		let updateQuery = { $set: {} };
 
-		//check password
-		const validPass = await bcrypt.compare(req.body.password, userFound.password);
-		if (!validPass)
-			throw {
-				error: { status: 401, type: "Authentication failure", message: "Wrong Password." },
-			};
-
-		// check which key needs upgrading
-		let query = { $set: {} };
 		for (let key in req.body) {
-			if (userFound[key] && userFound[key] !== req.body[key])
-				//first check if userFound[key] exists && check value different
-				query.$set[key] = req.body[key]; // creates a $set object with keys that have different values
+			if (key != "password") {
+				if (userToUpdate[key] === null) updateQuery.$set[key] = req.body[key];
+				else if (userToUpdate[key] && userToUpdate[key] !== req.body[key])
+					updateQuery.$set[key] = req.body[key]; //first check if userToUpdate[key] exists && check value different then creates a $set object with keys that have different values
+			}
 		}
 
-		// update the profile
+		// ? UPDATE USER
 		await User.updateOne(
-			{
-				_userId: req.user._id,
-			},
-			query //using $set method here to update values
+			{ _id: userToUpdate._id },
+			updateQuery //using $set method here to update values
 		);
-
-		// console.log(updatedProfile);
 
 		return res.status(200).send({
 			Success: {

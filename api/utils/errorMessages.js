@@ -62,6 +62,10 @@ module.exports.validationError = (error) => {
 	};
 };
 
+module.exports.wrongPwError = {
+	error: { status: 401, type: "Authentication failure", message: "Wrong Password." },
+};
+
 module.exports.reqBodyError = {
 	error: {
 		status: 400,
@@ -70,6 +74,7 @@ module.exports.reqBodyError = {
 			"Request body does not contain necessary items, please refer documentation to check",
 	},
 };
+
 module.exports.reqUserError = {
 	error: {
 		status: 400,
@@ -127,6 +132,7 @@ module.exports.notInvitedError = {
 		message: "You have not been invited to this classroom.",
 	},
 };
+
 module.exports.notRequestedError = {
 	error: {
 		status: 400,

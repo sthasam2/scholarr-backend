@@ -8,11 +8,13 @@ An online hub for **remote learning**.
 
 -   ### v.0.3.3.1
 
-1. Error Fixed: used ObjectId's native toString() method to fix comparision error
+1. [Testing] Integration Tested: **_Users end-points_**
+2. Bug Fixes
+3. Minor Additions and Modifications
 
 -   ### v.0.3.3.0
 
-1. [Testing] Integration Tested the Backend Auth Endpoints
+1. [Testing] Integration Tested: **_Auth end-points_**
 2. Tried Endpoint Testing with **Jest.js** and **SuperTest.js**
 3. Bug Fixes
 4. Minor Customizations
