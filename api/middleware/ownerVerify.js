@@ -24,22 +24,22 @@ module.exports.accountOwnerVerify = async (req, res, next) => {
 	try {
 		// check logged in
 		if (!req.user._id) throw reqUserError;
-		console.log(req.user._id);
 		// check if userId parameter available in url endpoints
 		if (!req.params.userId) throw endPointError;
 
 		const paramUserFound = await User.findById(req.params.userId);
 		if (!paramUserFound) throw nonExistenceError("user");
-		console.log(paramUserFound._id);
 
 		//check logged in user is the requested user
-		console.log(typeof req.user._id);
-		console.log(typeof paramUserFound._id);
 
-		let id1 = req.user.;
-		let id2 = paramUserFound._id;
-		const isParamUserReqUser = id1 == id2;
-		if (req.user._id != paramUserFound._id) throw ownerAccessDenailError;
+		// let id1 = toString(req.user._id);
+		// console.log(typeof id1);
+		// let id2 = toString(paramUserFound._id);
+		// console.log(typeof id2);
+
+		// const isParamUserReqUser = id1 == id2;
+
+		if (req.user._id.toString() != paramUserFound._id.toString()) throw ownerAccessDenailError;
 
 		req.user = paramUserFound;
 

@@ -1,10 +1,14 @@
 # SCHOLARR
 
-[![Version badge](https://img.shields.io/badge/Version-v.0.3.2.1-green.svg)](https://shields.io/) [![Version badge](https://img.shields.io/badge/Build-testing-red.svg)](https://shields.io/)
+[![Version badge](https://img.shields.io/badge/Version-v.0.3.3.1-green.svg)](https://shields.io/) [![Version badge](https://img.shields.io/badge/Build-testing-red.svg)](https://shields.io/)
 
 An online hub for **remote learning**.
 
 ## Changelogs
+
+-   ### v.0.3.3.1
+
+1. Error Fixed: used ObjectId's native toString() method to fix comparision error
 
 -   ### v.0.3.3.0
 
