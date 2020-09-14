@@ -6,6 +6,13 @@ An online hub for **remote learning**.
 
 ## Changelogs
 
+-   ### v.0.3.3.0
+
+1. [Testing] Integration Tested the Backend Auth Endpoints
+2. Tried Endpoint Testing with **Jest.js** and **SuperTest.js**
+3. Bug Fixes
+4. Minor Customizations
+
 -   ### v.0.3.2.1
 
 1. Frontend separated from the backend.

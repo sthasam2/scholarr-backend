@@ -1,7 +1,10 @@
 const nodemailer = require("nodemailer");
 
+// const dotenv = require("dotenv");
+// dotenv.config({ path: "./config/config.env" });
+
 // transporter
-module.exports.transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
 	host: "smtp.gmail.com",
 	port: 587,
 	auth: {
@@ -11,7 +14,7 @@ module.exports.transporter = nodemailer.createTransport({
 });
 
 // verify connection
-module.exports.verifyConnection = async () => {
+const verifyConnection = async () => {
 	transporter.verify((error, success) => {
 		if (error) {
 			console.log(error);
@@ -20,3 +23,6 @@ module.exports.verifyConnection = async () => {
 		}
 	});
 };
+
+module.exports.transporter = transporter;
+module.exports.verifyConnection = verifyConnection;
