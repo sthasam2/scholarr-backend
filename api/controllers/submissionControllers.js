@@ -52,7 +52,7 @@ module.exports.submit_classwork_post = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -97,7 +97,7 @@ module.exports.update_classwork_submissioin_patch = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -141,7 +141,7 @@ module.exports.delete_classwork_submissioin_delete = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };

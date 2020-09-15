@@ -1,8 +1,8 @@
 const userRouter = require("express").Router();
 const userController = require("../controllers/userControllers");
-const { loggedInVerify } = require("../middleware/loggedInVerify");
+const { loggedInVerify } = require("../middleware/verification");
 const { imagesUpload } = require("../middleware/fileUpload");
-const { accountOwnerVerify } = require("../middleware/ownerVerify");
+const { accountOwnerVerify } = require("../middleware/verification");
 
 //
 //

@@ -24,12 +24,12 @@ const { classroomRouter } = require("./classroomRoutes");
  */
 const classworkController = require("../controllers/classworkControllers");
 const submissionController = require("../controllers/submissionControllers");
-const { loggedInVerify } = require("../middleware/loggedInVerify");
+const { loggedInVerify } = require("../middleware/verification");
 const {
 	classroomOwnerVerify,
 	classMemberVerify,
 	classworkExistVerify,
-} = require("../middleware/ownerVerify");
+} = require("../middleware/verification");
 //
 //
 // ! CLASSWORK routes

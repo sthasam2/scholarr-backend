@@ -32,7 +32,7 @@ module.exports.loggedUserExistsVerify = async (req, res, next) => {
 
 		next();
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		res.status(400).send(err);
 	}
 };
@@ -75,7 +75,7 @@ module.exports.classworkExistVerify = async (req, res, next) => {
 		req.customField.classwork = await ClassworkComment.findById(req.params.classworkId);
 		next();
 	} catch (err) {
-		console.log(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		res.status(400).send(err);
 	}
 };

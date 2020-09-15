@@ -22,8 +22,8 @@ const classroomRouter = require("express").Router();
  */
 const classroomController = require("../controllers/classroomControllers");
 
-const { loggedInVerify } = require("../middleware/loggedInVerify");
-const { classroomOwnerVerify, classMemberVerify } = require("../middleware/ownerVerify");
+const { loggedInVerify, accountOwnerVerify } = require("../middleware/verification");
+const { classroomOwnerVerify, classMemberVerify } = require("../middleware/verification");
 // const { imagesUpload, fileUpload } = require("../middleware/fileUpload");
 
 //
@@ -31,48 +31,45 @@ const { classroomOwnerVerify, classMemberVerify } = require("../middleware/owner
 // classroomRouter request methods
 // TODO make a possible middleware to implement roles like teacher student so teacher gets more info
 
-//*-
-classroomRouter.get(
-	"/",
-	loggedInVerify,
-	classroomController.classes_get
-); /** get all classes available  @method GET @endpoint `api/classrooms` */
+/** get all classes available  @method GET @endpoint `api/classrooms` */
+classroomRouter.get("/", loggedInVerify, classroomController.classes_get); //!
 
-//*-
+/** get all classes available for certain user @method GET @endpoint `api/classrooms/:userId`*/
 classroomRouter.get(
 	"/user/:userId",
 	loggedInVerify,
+	accountOwnerVerify,
 	classroomController.user_classes_get
-); /** get all classes available for certain user @method GET @endpoint `api/classrooms/:userId`*/
+); //!!
 
-// CRUD classroom
-//*-
+//? CRUD classroom
+
+/** get certain classroom detail @method GET @endpoint `api/classrooms/detail/:classroomId`*/
 classroomRouter.get(
-	"/:classroomId",
+	"/detail/:classroomId",
 	loggedInVerify,
+	classMemberVerify,
 	classroomController.class_detail_get
-); /** get certain classroom detail @method GET @endpoint `api/classrooms/:classroomId`*/
+); //!
 
-//*-
-classroomRouter.post(
-	"/create",
-	loggedInVerify,
-	classroomController.create_class_post
-); /** CREATE classroom @method POST @endpoint `api/classrooms/create`*/
+/** CREATE classroom @method POST @endpoint `api/classrooms/create`*/
+classroomRouter.post("/create", loggedInVerify, classroomController.create_class_post); //!
 
-//*-
+/** UPDATE classroom @method PATCH @endpoint `api/classrooms/update/:classroomId`*/
 classroomRouter.patch(
 	"/update/:classroomId",
 	loggedInVerify,
+	classroomOwnerVerify,
 	classroomController.update_class_patch
-); /** UPDATE classroom @method PATCH @endpoint `api/classrooms/update/:classroomId`*/
+); //!
 
-//*-
+/** delete classroom @method DELETE @endpoint `api/classrooms/delete/:classroomId`*/
 classroomRouter.delete(
 	"/delete/:classroomId",
 	loggedInVerify,
-	classroomController.class_delete
-); /** delete classroom @method DELETE @endpoint `api/classrooms/delete/:classroomId`*/
+	classroomOwnerVerify,
+	classroomController.delete_class_delete
+); //!!
 
 //
 //

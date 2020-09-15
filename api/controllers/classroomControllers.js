@@ -53,81 +53,71 @@ module.exports.classes_get = async (req, res) => {
 		// looping through each classroom doc
 		for await (const doc of Classroom.find()) {
 			classrooms.push({
-				//ids
 				_creatorId: doc._creatorId,
 				_classId: doc._id,
-				//classroom info
 				classCode: doc.classCode,
 				className: doc.className,
 				classDescription: doc.classDescription,
-				// members
-				classMembers: doc.classMembers,
-				classWorks: doc.classWorks,
 			});
 		}
 
 		return res.status(200).send(classrooms);
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
 
+/**
+ * ### class_detail_get
+ * **prerequisites: loggedInVerify, classMemberVerify**
+ * @param {object} req
+ * @param {object} res
+ * @returns {object} Either: response Classroom, OR: error
+ */
 module.exports.class_detail_get = async (req, res) => {
 	try {
-		const classroomFound = await Classroom.findOne({ _id: req.params.classId });
-		console.log(classroomFound);
-		if (!classroomFound) throw nonExistenceError("classroom");
+		const classroomFound = req.customField.classroom;
+		let classroom = null;
 
-		// check creator
-		const isCreator = req.user._id === classroomFound._creatorId;
-		// check member
-		const isMember = classroomFound.classMembers.enrolledMembers.some(
-			(doc) => doc._memberId === req.user._id
-		);
-
-		if (!(isCreator || isMember))
-			throw errorMessage(
-				401,
-				"Access-denied",
-				"To access this classroom you must either be a member or the creator"
-			);
-
-		const classroom = {
-			_id: classroomFound._id,
-			createdAt: classroomFound.createdAt,
-			updatedAt: classroomFound.updatedAt,
-			className: classroomFound.classroomName,
-			classDescription: classroomFound.classroomDescription,
-			classCode: classroomFound.classroomCode,
-			classMembers: classroomFound.classroomMembers.enrolledMembers,
-			classWorks: classroomFound.classWorks,
-		};
+		if (req.customField.reqUser.isCreator) classroom = classroomFound;
+		else if (req.customField.reqUser.isMember)
+			classroom = {
+				_id: classroomFound._id,
+				createdAt: classroomFound.createdAt,
+				updatedAt: classroomFound.updatedAt,
+				className: classroomFound.className,
+				classDescription: classroomFound.classDescription,
+				classCode: classroomFound.classCode,
+				classMembers: classroomFound.classMembers.enrolledMembers,
+				classWorks: classroomFound.classWorks,
+			};
+		else
+			classroom = {
+				_id: classroomFound._id,
+				createdAt: classroomFound.createdAt,
+				className: classroomFound.className,
+				classDescription: classroomFound.classDescription,
+				classCode: classroomFound.classCode,
+			};
 
 		return res.status(200).send(classroom);
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
 
 module.exports.user_classes_get = async (req, res) => {
 	try {
-		const userFound = await User.findById(req.params.userId);
-		if (!userFound)
-			throw {
-				error: {
-					status: 400,
-					type: "Non-existence",
-					message: "Requested user does not exist",
-				},
-			};
+		// check Endpoint
+		const userFound = req.user;
 
 		const classesAttendingFound = await Classroom.find({
-			_id: { $in: userFound.classesAtending },
+			_id: { $in: userFound.classroom.classesAtending },
 		});
 		const classesTeachingFound = await Classroom.find({
-			_id: { $in: userFound.classesTeaching },
+			_id: { $in: userFound.classroom.classesTeaching },
 		});
 
 		const attending = [];
@@ -157,26 +147,21 @@ module.exports.user_classes_get = async (req, res) => {
 			classesTeaching: teaching,
 		});
 	} catch (err) {
-		console.log(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
 
 /**
  * CREATE classroom
+ * **prerequisites: loggedInVerify**
  * POST body = {className*: , classDescription: , classSubject: , affiliatedInstitution: ,}
  */
 module.exports.create_class_post = async (req, res) => {
 	try {
 		// validate post body
 		const { error } = createClassroomValidation(req.body);
-		if (error)
-			throw {
-				error: {
-					type: "Req.body Validation error",
-					message: error.details[0].message,
-				},
-			};
+		if (error) throw validationError(error);
 
 		// check uniqueness of class code
 		let code = null;
@@ -194,12 +179,8 @@ module.exports.create_class_post = async (req, res) => {
 		classAttributes["classCode"] = code;
 
 		// since all fields are not required, only those requested are added
-		for (let key in req.body) {
-			classAttributes[key] = req.body[key];
-		}
+		for (let key in req.body) classAttributes[key] = req.body[key];
 
-		// const classroom = new Classroom(classAttributes);
-		// const savedClassroom = await classroom.save();
 		const savedClassroom = await new Classroom(classAttributes).save();
 
 		await User.updateOne(
@@ -215,38 +196,31 @@ module.exports.create_class_post = async (req, res) => {
 				message: "Classroom created",
 				classroomInfo: {
 					_id: savedClassroom._id,
+					_creatorId: savedClassroom._creatorId,
 					className: savedClassroom.className,
 					classCode: savedClassroom.classCode,
-					creator: savedClassroom._creatorId,
 				},
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
 
 /**
- * Update class details
- * PATCH body: {_classId: className*: ,classDescription: ,classSubject: ,affiliatedInstitution: ,}
+ * ### Update class details
+ * **prerequisites: loggedInVerify, classOwnerVerify**
+ * PATCH body: { className*: ,classDescription: ,classSubject: ,affiliatedInstitution: ,}
  */
 module.exports.update_class_patch = async (req, res) => {
 	try {
 		const { error } = updateClassroomValidation(req.body);
-		if (error)
-			throw {
-				error: {
-					type: "Req.body Validation error",
-					message: error.details[0].message,
-				},
-			};
+		if (error) throw validationError(error);
 
-		const classroomFound = await Classroom.findOne({ _id: req.params.classId });
-		if (!classroomFound) throw nonExistenceError("classroom");
+		const classroomFound = req.customField.classroom;
 
 		const updateQuery = { $set: {} };
-
 		for (let key in req.body) {
 			if (classroomFound[key] && classroomFound[key] != req.body[key])
 				updateQuery.$set[key] = req.body[key];
@@ -265,74 +239,67 @@ module.exports.update_class_patch = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
 
 /**
- *
+ * ### Delete classroom
+ * **pre-requisites: loggedInVerify, classroomOwnerVerify
+ * @param {object} req
+ * @param {object} res
  */
-module.exports.class_delete = async (req, res) => {
+module.exports.delete_class_delete = async (req, res) => {
 	try {
-		//find the classroom
-		const classroomFound = await Classroom.findById(req.params.classroomId);
-		if (!classroomFound) throw nonExistenceError("classroom");
+		// GET CLASSROOM
+		const classroomFound = req.customField.classroom;
 
-		//capture all the ids of attending users
-		const classroomMembers = classroomFound.classMembers.enrolledMembers;
+		// GET MEMBERS
+		let classroomMembers = [];
+		for (let doc of classroomFound.classMembers.enrolledMembers)
+			classroomMembers.push(doc.toString());
 
-		//check if requesting(logged user) is creator of the classroom
-		if (req.user._id != classroomFound._creatorId)
-			throw {
-				error: {
-					status: 401,
-					type: "Access denied!",
-					message: "Only classroom creators can perform delete requests.",
-				},
-			};
-
-		//delete the classroom
+		// DELETE
 		await Classroom.deleteOne({ _id: classroomFound._id });
 
-		//remove classroom ids from user
-		for (doc of classroomMembers) {
-			await User.updateOne(
-				{ _id: doc._memberId },
-				{
-					$pull: {
-						"classroom.classesAttending": classroomFound._id,
-						"classroom.classesInvited": classroomFound._id,
-						"classroom.classesRequested": classroomFound._id,
-					},
-				}
-			);
-			// await User.updateOne(
-			// 	{ _id: doc._memberId },
-			// 	{ $pullAll: { "classroom.classesInvited": classroomFound._id } }
-			// );
-			// await User.updateOne(
-			// 	{ _id: doc._memberId },
-			// 	{ $pullAll: { "classroom.classesRequested": classroomFound._id } }
-			// );
-		}
+		// UPDATE USER
+		await User.updateOne(
+			{ _id: classroomFound._creatorId },
+			{
+				$pull: {
+					"classroom.classesTeaching": classroomFound._id,
+				},
+			}
+		);
+		await User.updateMany(
+			{ _id: { $in: classroomMembers } },
+			{
+				$pull: {
+					"classroom.classesAttending": classroomFound._id,
+					"classroom.classesInvited": classroomFound._id,
+					"classroom.classesRequested": classroomFound._id,
+				},
+			}
+		);
 
 		return res.status(202).send({
 			success: {
 				status: 202,
-				type: "Request Accepted",
+				type: "Request Accepted!",
 				message: "Classroom sucessfully deleted",
+				_classroomId: classroomFound._id,
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
 
 //
 //
-// ! classroom members methods
+// ? classroom members methods
 
 /**
  *
@@ -382,7 +349,7 @@ const getMemberList = async (req, res, reqMemberType) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -473,7 +440,7 @@ module.exports.classroom_bulk_invite_post = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -552,7 +519,7 @@ module.exports.classroom_invite_post = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -613,7 +580,7 @@ module.exports.accept_invite_get = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -669,7 +636,7 @@ module.exports.classroom_request_post = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -729,7 +696,7 @@ module.exports.accept_request_get = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -826,7 +793,7 @@ const removeMembers = async (req, res, membershipAction) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };

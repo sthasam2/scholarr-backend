@@ -110,7 +110,7 @@ const getClassworkList = async (req, res, reqClassworkType) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -251,7 +251,7 @@ const createClasswork = async (req, res, reqClassworkType) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -360,7 +360,7 @@ module.exports.update_classwork_patch = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -401,7 +401,7 @@ module.exports.delete_classwork_delete = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };

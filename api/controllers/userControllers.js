@@ -50,7 +50,7 @@ module.exports.users_get = async (req, res) => {
 
 		return res.send(users);
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -89,7 +89,7 @@ module.exports.group_users_post = async (req, res) => {
 
 		return res.status(200).send(group);
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -112,7 +112,7 @@ module.exports.user_detail_private_get = async (req, res) => {
 
 		return res.status(200).send(userExists);
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -143,7 +143,7 @@ module.exports.user_detail_get = async (req, res) => {
 
 		return res.status(200).send(user);
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -187,7 +187,7 @@ module.exports.update_user_patch = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
@@ -233,7 +233,7 @@ module.exports.upload_user_images_patch = async (req, res) => {
 			}
 		});
 	} catch (err) {
-		console.error(err);
+		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
 	}
 };
