@@ -21,13 +21,13 @@
 
 			div.container {
 				margin: 10vh 5vw;
-				padding: 3rem;
+				padding: 1rem;
 				display: flex;
 				justify-content: center;
 			}
 
 			div.custom {
-				padding: 35px;
+				padding: 2em;
 				display: grid;
 				border-style: solid;
 				border-color: #000000;
@@ -35,7 +35,7 @@
 				min-width: 80%;
 			}
 
-			button.outline {
+			a.button_outline {
 				position: relative;
 				background: transparent;
 				color: black;
@@ -47,16 +47,17 @@
 				padding: 10px 40px;
 				margin: 10px 0px;
 				text-transform: uppercase;
+				text-decoration: none;
 				transition: all 0.2s linear;
 			}
-			button.outline:hover {
+			a.button_outline:hover {
 				color: white;
 				background: black;
 				border-color: white;
 				transition: all 0.2s linear;
 			}
 
-			button.outline:active {
+			a.button_outline:active {
 				border-radius: 22px;
 			}
 		</style>
@@ -70,26 +71,22 @@
 			<div class="custom">
 				<h1 class="custom">Classroom Invitation</h1>
 				<p class="custom">
-					Dear <strong>User</strong>,<br />
+					Dear <strong>${userDetails.username}</strong>,<br />
 					You have been invited to become a member of a classroom by
 					<strong>${classroomDetails.creatorUsername}</strong> . Please check the details
 					regarding the classroom below.<br /><br />
 
 					<strong style="font-size: 1.7rem">Classroom Details</strong><br />
-					<strong>Name</strong> : '${classroomDetails.className}'<br />
-					<strong>Description</strong> : '${classroomDetails.classDescription}'<br />
-					<strong>Code</strong> : '${classroomDetails.classCode}'<br />
-					<strong>Creator</strong> : '${classroomDetails.creatorUsername}' <br /><br />
+					<strong>Name</strong> : ${classroomDetails.className}<br />
+					<strong>Description</strong> : ${classroomDetails.classDescription}<br />
+					<strong>Code</strong> : ${classroomDetails.classCode}<br />
+					<strong>Creator</strong> : ${classroomDetails.creatorUsername}<br /><br />
 
-					To <strong>accept</strong> invite,<br />
-					Click button:<br />
-
-					<a href="" style="font-style: italic"
-						><button class="outline" type="submit">Accept Invite</button><br
-					/></a>
-
-					Or, Copy the following link<br />
-					<a href="">#put link here</a>
+					To <strong>accept</strong> invite, check your invite dashboard.<br />
+					Or, Click button to accept invite:<br /><br />
+					<a href="${endpoint}" class="button_outline">${endpoint}</a><br /><br />
+					Or, you can copy the link below into your web browser:<br />
+					<a href="${endpoint}" style="font-style: italic">${endpoint}</a>
 					<br /><br />
 					Thank you for using our services. Have a blast!
 					<br /><br />

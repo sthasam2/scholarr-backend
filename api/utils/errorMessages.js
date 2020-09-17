@@ -113,7 +113,7 @@ module.exports.alreadyMemberError = {
 	error: {
 		status: 400,
 		type: "Inconsequential Request!",
-		message: "You are already a member of the classroom.",
+		message: "User is already a member of the classroom.",
 	},
 };
 

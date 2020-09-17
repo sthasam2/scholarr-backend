@@ -19,7 +19,7 @@ module.exports.submit_classwork_post = async (req, res) => {
 		const reqUser = req.user;
 
 		// Validate req.body
-		const { error } = createSubmissionValidate(req.body);
+		const { error } = createSubmissionValidation(req.body);
 		if (error) throw validationError(error);
 
 		// Create
@@ -70,7 +70,7 @@ module.exports.update_classwork_submissioin_patch = async (req, res) => {
 		if (paramsSubmission._usedId != reqUser._id) throw ownerAccessDenailError;
 
 		// Validate req.body
-		const { error } = createSubmissionValidate(req.body);
+		const { error } = createSubmissionValidation(req.body);
 		if (error) throw validationError(error);
 
 		// UPDATE data

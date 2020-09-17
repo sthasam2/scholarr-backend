@@ -12,7 +12,7 @@ module.exports.inviteBulkClassroomEmail = async (req, classroomDetails, userEmai
 	const message = {
 		from: process.env.GMAIL_USER,
 		to: user.email,
-		subject: "[Scholarr] Email verified",
+		subject: "[Scholarr] Classroom Invite",
 		html: `<html>
 		<head>
 			<style>
@@ -36,13 +36,13 @@ module.exports.inviteBulkClassroomEmail = async (req, classroomDetails, userEmai
 	
 				div.container {
 					margin: 10vh 5vw;
-					padding: 3rem;
+					padding: 1rem;
 					display: flex;
 					justify-content: center;
 				}
 	
 				div.custom {
-					padding: 35px;
+					padding: 2em;
 					display: grid;
 					border-style: solid;
 					border-color: #000000;
@@ -50,7 +50,7 @@ module.exports.inviteBulkClassroomEmail = async (req, classroomDetails, userEmai
 					min-width: 80%;
 				}
 	
-				button.outline {
+				a.button_outline {
 					position: relative;
 					background: transparent;
 					color: black;
@@ -62,16 +62,17 @@ module.exports.inviteBulkClassroomEmail = async (req, classroomDetails, userEmai
 					padding: 10px 40px;
 					margin: 10px 0px;
 					text-transform: uppercase;
+					text-decoration: none;
 					transition: all 0.2s linear;
 				}
-				button.outline:hover {
+				a.button_outline:hover {
 					color: white;
 					background: black;
 					border-color: white;
 					transition: all 0.2s linear;
 				}
 	
-				button.outline:active {
+				a.button_outline:active {
 					border-radius: 22px;
 				}
 			</style>
@@ -96,14 +97,8 @@ module.exports.inviteBulkClassroomEmail = async (req, classroomDetails, userEmai
 						<strong>Code</strong> : ${classroomDetails.classCode}<br />
 						<strong>Creator</strong> : ${classroomDetails.creatorUsername}<br /><br />
 	
-						To <strong>accept</strong> invite, check your invite dashboard<br />
-						Click button to redirect to Scholarr:<br />
-	
-						<a href="${req.headers.host}\/"
-							><button class="outline" type="submit">Accept Invite</button><br
-						/></a>
-	
-						<br /><br />
+						To <strong>accept</strong> invite, check your invite dashboard.<br />
+
 						Thank you for using our services. Have a blast!
 						<br /><br />
 						Sincerely,
@@ -134,11 +129,12 @@ module.exports.inviteBulkClassroomEmail = async (req, classroomDetails, userEmai
  */
 module.exports.inviteClassroomEmail = async (req, classroomDetails, userDetails) => {
 	await verifyConnection();
+	const endpoint = `${req.headers.host}/api/classrooms/${classroomDetails._id}/accept_invite/${userDetails._id}`;
 
 	const message = {
 		from: process.env.GMAIL_USER,
 		to: userDetails.email,
-		subject: "[Scholarr] Email verified",
+		subject: "[Scholarr] Classroom Invite",
 		html: `<html>
 		<head>
 			<style>
@@ -162,13 +158,13 @@ module.exports.inviteClassroomEmail = async (req, classroomDetails, userDetails)
 	
 				div.container {
 					margin: 10vh 5vw;
-					padding: 3rem;
+					padding: 1rem;
 					display: flex;
 					justify-content: center;
 				}
 	
 				div.custom {
-					padding: 35px;
+					padding: 2em;
 					display: grid;
 					border-style: solid;
 					border-color: #000000;
@@ -176,7 +172,7 @@ module.exports.inviteClassroomEmail = async (req, classroomDetails, userDetails)
 					min-width: 80%;
 				}
 	
-				button.outline {
+				a.button_outline {
 					position: relative;
 					background: transparent;
 					color: black;
@@ -188,16 +184,17 @@ module.exports.inviteClassroomEmail = async (req, classroomDetails, userDetails)
 					padding: 10px 40px;
 					margin: 10px 0px;
 					text-transform: uppercase;
+					text-decoration: none;
 					transition: all 0.2s linear;
 				}
-				button.outline:hover {
+				a.button_outline:hover {
 					color: white;
 					background: black;
 					border-color: white;
 					transition: all 0.2s linear;
 				}
 	
-				button.outline:active {
+				a.button_outline:active {
 					border-radius: 22px;
 				}
 			</style>
@@ -222,14 +219,11 @@ module.exports.inviteClassroomEmail = async (req, classroomDetails, userDetails)
 						<strong>Code</strong> : ${classroomDetails.classCode}<br />
 						<strong>Creator</strong> : ${classroomDetails.creatorUsername}<br /><br />
 	
-						To <strong>accept</strong> invite, check your invite dashboard<br />
-						Click button to redirect to Scholarr:<br />
-	
-						<a href="${req.headers.host}\/api\/classrooms\/${classroomDetails._id}\/invite\/${userDetails._id}\/accept"
-							><button class="outline" type="submit">Accept Invite</button></a><br />
-						Or, you can copy the link below into your web browser:<br/>
-						<a href="${req.headers.host}\/api\/classrooms\/${classroomDetails._id}\/invite\/${userDetails._id}\/accept"
-							 style="font-style: italic;">${req.headers.host}\/api\/classrooms\/${classroomDetails._id}\/invite\/${userDetails._id}\/accept</a>
+						To <strong>accept</strong> invite, check your invite dashboard.<br />
+						Or, Click button to accept invite:<br /><br />
+						<a href="${endpoint}" class="button_outline">${endpoint}</a><br /><br />
+						Or, you can copy the link below into your web browser:<br />
+						<a href="${endpoint}" style="font-style: italic">${endpoint}</a>
 						<br /><br />
 						Thank you for using our services. Have a blast!
 						<br /><br />

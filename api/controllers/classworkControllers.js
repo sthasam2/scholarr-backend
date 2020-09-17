@@ -187,27 +187,27 @@ const createClasswork = async (req, res, reqClassworkType) => {
 		// Validation depending on cases
 		switch (reqClassworkType) {
 			case classworkType.ASSIGNMENT:
-				const { error } = await assignmentCWValidate(req.body);
+				const { error } = await assignmentCWValidation(req.body);
 				if (error) throw validationError(error);
 
 				break;
 			case classworkType.TEST:
-				const { error } = await testCWValidate(req.body);
+				const { error } = await testCWValidation(req.body);
 				if (error) throw validationError(error);
 
 				break;
 			case classworkType.QUESTION:
-				const { error } = await questionCWValidate(req.body);
+				const { error } = await questionCWValidation(req.body);
 				if (error) throw validationError(error);
 
 				break;
 			case classworkType.MATERIAL:
-				const { error } = await materialCWValidate(req.body);
+				const { error } = await materialCWValidation(req.body);
 				if (error) throw validationError(error);
 
 				break;
 			case classworkType.GENERAL:
-				const { error } = await generalCWValidate(req.body);
+				const { error } = await generalCWValidation(req.body);
 				if (error) throw validationError(error);
 
 				break;
@@ -311,27 +311,27 @@ module.exports.update_classwork_patch = async (req, res) => {
 		// verify req body
 		switch (reqClassworkType) {
 			case classworkType.ASSIGNMENT:
-				const { error } = await updateAssignmentCWValidate(req.body);
+				const { error } = await updateAssignmentCWValidation(req.body);
 				if (error) throw validationError(error);
 
 				break;
 			case classworkType.GENERAL:
-				const { error } = await updateGeneralCWValidate(req.body);
+				const { error } = await updateGeneralCWValidation(req.body);
 				if (error) throw validationError(error);
 
 				break;
 			case classworkType.MATERIAL:
-				const { error } = await updateMaterialCWValidate(req.body);
+				const { error } = await updateMaterialCWValidation(req.body);
 				if (error) throw validationError(error);
 
 				break;
 			case classworkType.QUESTION:
-				const { error } = await updateQuestionCWValidate(req.body);
+				const { error } = await updateQuestionCWValidation(req.body);
 				if (error) throw validationError(error);
 
 				break;
 			case classworkType.TEST:
-				const { error } = await updateTestCWValidate(req.body);
+				const { error } = await updateTestCWValidation(req.body);
 				if (error) throw validationError(error);
 
 				break;
