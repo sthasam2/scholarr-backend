@@ -22,7 +22,9 @@ const app = express(); // Express app
 app.use(express.static(`${__dirname}/public/upload`));
 
 app.use(express.json()); // Middleware for parsing requests into JSON format and store in req.body
-app.use(morgan("dev")); // Logger for requests
+
+if (process.env.NODE_ENV === "dev") app.use(morgan("dev")); // Logger for requests
+
 app.use(cors()); // Cross origin enabler
 
 // ROUTES ---
@@ -32,9 +34,7 @@ app.use("/api", apiRouter); // (@param1: route, @param2 handler)
 
 // SERVER ---
 const PORT = process.env.PORT || process.argv[2] || 4000;
-const server = app.listen(PORT, "0.0.0.0", () =>
-  console.log(`Server running at ${PORT}.`)
-);
+const server = app.listen(PORT, "0.0.0.0", () => console.log(`Server running at ${PORT}.`));
 // server ---
 
 // SOCKETS ---
@@ -45,10 +45,12 @@ const video = io.of("/video");
 
 // connection handlers
 text.on("connection", (socket) =>
-  console.log(`Socket connection made. Namespace:Chat, ID: ${socket.id}`)
+	console.log(`Socket connection made. Namespace:Chat, ID: ${socket.id}`)
 );
 
 video.on("connection", (socket) =>
-  console.log(`Socket connection made. Namespace:VideoChat, ID: ${socket.id}`)
+	console.log(`Socket connection made. Namespace:VideoChat, ID: ${socket.id}`)
 );
 // sockets ---
+
+module.exports = server;

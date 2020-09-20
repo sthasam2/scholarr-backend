@@ -1,4 +1,4 @@
-/** API router. path: `/api` */
+/** API router. path: `/api/` */
 const apiRouter = require("express").Router();
 const authRouter = require("./authRoutes");
 const userRouter = require("./userRoutes");

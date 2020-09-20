@@ -1,114 +1,139 @@
 /**
- * classes_get
- * class_detail_get
- * user_classes_get
- * create_class_post
- * update_class_patch
- * classworks_get
- * classwork_detail_get
- * create_classwork_post
- * update_classwork_patch
- * submit_classwork_post
- * update_classwork_submissioin_patch
+ * ### Classroom Router
+ * Express Router for handling classroom routes.
+ * @endpoint `api/classrooms`
  */
-
 const classroomRouter = require("express").Router();
+
+/**
+ * ### Classroom Controller
+ *  Middleware for handling different methods of Classroom
+ *
+ * #### Available Methods
+ * - **Classroom CRUD**
+ * 1. classes_get
+ * 2. user_classes_get
+ * 3. create_class_post
+ * 4. class_detail_get
+ * 5. update_class_patch
+ * 6. class_delete
+ *
+ * - **Classroom member handling**
+ */
 const classroomController = require("../controllers/classroomControllers");
-const { loggedInVerify } = require("../middleware/loggedInVerify");
+
+const { loggedInVerify, accountOwnerVerify } = require("../middleware/verification");
+const { classroomOwnerVerify, classMemberVerify } = require("../middleware/verification");
 // const { imagesUpload, fileUpload } = require("../middleware/fileUpload");
 
 //
 //
 // classroomRouter request methods
-//*  TODO make a possible middleware to implement roles like teacher student so teacher gets more info
+// TODO make a possible middleware to implement roles like teacher student so teacher gets more info
 
+/** get all classes available  @method GET @endpoint `api/classrooms` */
+classroomRouter.get("/", loggedInVerify, classroomController.classes_get); //!
+
+/** get all classes available for certain user @method GET @endpoint `api/classrooms/:userId`*/
 classroomRouter.get(
-  "/",
-  loggedInVerify,
-  classroomController.classes_get
-); /** get all classes available  @method GET @endpoint `api/classrooms` */
+	"/user/:userId",
+	loggedInVerify,
+	accountOwnerVerify,
+	classroomController.user_classes_get
+); //!!
 
-classroomRouter.get(
-  "/user/:userId",
-  loggedInVerify,
-  classroomController.user_classes_get
-); /** get all classes available for certain user @method GET @endpoint `api/classroom/:userId`*/
+//? CRUD classroom
 
-// CRUD classroom
-classroomRouter.post(
-  "/create",
-  loggedInVerify,
-  classroomController.create_class_post
-); /** CREATE classroom @method POST @endpoint `api/classroom/:classId/update`*/
+/** get certain classroom detail @method GET @endpoint `api/classrooms/detail/:classroomId`*/
+classroomRouter
+	.route("/detail/:classroomId")
+	.get(loggedInVerify, classMemberVerify, classroomController.class_detail_get); //!
 
-classroomRouter.get(
-  "/:classId",
-  loggedInVerify,
-  classroomController.class_detail_get
-); /** get certain classroom detail @method GET @endpoint `api/classroom/:classId`*/
+/** CREATE classroom @method POST @endpoint `api/classrooms/create`*/
+classroomRouter.route("/create").post(loggedInVerify, classroomController.create_class_post); //!
 
+/** UPDATE classroom @method PATCH @endpoint `api/classrooms/update/:classroomId`*/
 classroomRouter.patch(
-  "/:classId/update",
-  loggedInVerify,
-  classroomController.update_class_patch
-); /** UPDATE classroom @method PATCH @endpoint `api/classroom/:classId/update`*/
+	"/update/:classroomId",
+	loggedInVerify,
+	classroomOwnerVerify,
+	classroomController.update_class_patch
+); //!
 
+/** delete classroom @method DELETE @endpoint `api/classrooms/delete/:classroomId`*/
 classroomRouter.delete(
-  "/:classId/delete",
-  loggedInVerify,
-  classroomController.class_delete
-); /** delete classroom @method DELETE @endpoint `api/classroom/:classId/delete`*/
+	"/delete/:classroomId",
+	loggedInVerify,
+	classroomOwnerVerify,
+	classroomController.delete_class_delete
+); //!! //!!
 
 //
 //
-// CLASSWORK methods
-
-classroomRouter.get(
-  "/:classId/classworks",
-  loggedInVerify,
-  classroomController.classworks_get
-); /** get classroom classworks @method GET @endpoint `api/classroom/:classId/classworks`*/
-
-// classwork CRUD
-
-classroomRouter.post(
-  "/:classId/classworks/create",
-  loggedInVerify,
-  classroomController.create_classwork_post
-); /** create classwork @method POST @endpoint `api/classroom/:classId/classworks/create`*/
-
-classroomRouter.get(
-  "/:classId/classworks/:classworkId",
-  loggedInVerify,
-  classroomController.classwork_detail_get
-); /** get certain classrooms classwork @method GET @endpoint `api/classroom/:classId/classworks/:classworkId`*/
-
-classroomRouter.patch(
-  "/:classId/classworks/:classworkId/update",
-  loggedInVerify,
-  classroomController.update_classwork_patch
-); /** update classwork @method PATCH @endpoint `api/classroom/:classId/classworks/:classworkId/update`*/
-
-// classroomRouter.delete(
-// 	"/:classId/classworks/:classworkId/delete",
-// 	loggedInVerify,
-// 	classroomController.classwork_delete
-// ); /** delete classwork @method DELETE @endpoint `api/classroom/:classId/classworks/:classworkId/delete`*/
+// CLASSROOM MEMBER METHODS
+// todo classroom invite, accept, request{via code}
 
 //
 //
-// STUDENT SUBMITS
+//INVITE
 
-classroomRouter.post(
-  "/:classId/classworks/:classworkId/submit",
-  loggedInVerify,
-  classroomController.submit_classwork_post
-); /** submit classwork @method GET @endpoint `api/classroom/:classId/classworks/:classId/submit`*/
+/** invite users to classroom @method POST @endpoint `api/classrooms/invite/:classroomId/`*/
+classroomRouter
+	.route("/:classroomId/invite/user")
+	.post(loggedInVerify, classroomOwnerVerify, classroomController.classroom_invite_post); //!!
 
-classroomRouter.patch(
-  "/:classId/classworks/:classworkId/:submissionId/update",
-  loggedInVerify,
-  classroomController.update_classwork_submissioin_patch
-); /** update classwork @method PATCH @endpoint `api/classroom/:classId/classworks/:classId/:submissionId/update`*/
+//
+//
+//REQUEST
+/** request to become users for classroom @method POST @endpoint `api/classrooms/request`*/
+classroomRouter.route("/request").post(loggedInVerify, classroomController.classroom_request_post); //!!
+
+//
+//
+//ACCEPT
+/** accept requesting members for classroom @method POST @endpoint `api/classrooms/:classroomId/accept_request/:userId`*/
+classroomRouter
+	.route("/:classroomId/accept_request/:userId")
+	.get(loggedInVerify, classroomOwnerVerify, classroomController.accept_request_get); //!
+
+/** accept invited users to classroom @method POST @endpoint `api/classrooms/:classroomId/accept_invite/:userId`*/
+classroomRouter
+	.route("/:classroomId/accept_invite/:userId")
+	.get(classroomController.accept_invite_get); //!
+//
+//
+// LEAVE/DELETE
+/** remove invitation classroom @method POST @endpoint `api/classrooms/:classroomId/remove_invite/:userId`*/
+classroomRouter
+	.route("/:classroomId/remove_invite/:userId")
+	.get(loggedInVerify, classroomController.remove_invitation_get); //!!
+
+/** remove request for classroom @method POST @endpoint `api/classrooms/:classroomId/remove_request/:userId`*/
+classroomRouter
+	.route("/:classroomId/remove_request/:userId")
+	.get(loggedInVerify, classroomController.remove_request_get); //!
+
+/** remove enrollment from classroom @method POST @endpoint `api/classrooms/:classroomId/remove_enrollment/:userId`*/
+classroomRouter
+	.route("/:classroomId/remove_enrolled/:userId")
+	.get(loggedInVerify, classroomOwnerVerify, classroomController.remove_enrollment_get); //!!
+
+//
+//
+// GET LIST OF MEMBERS
+/** get list of invited users for classroom @method GET @endpoint `api/classrooms/:classroomId/invited_members`*/
+classroomRouter
+	.route("/:classroomId/invited_members")
+	.get(loggedInVerify, classroomOwnerVerify, classroomController.invited_members_get); //!
+
+/**get list of all requesting users for classroom @method GET @endpoint `api/classrooms/:classroomId/requesting_members`*/
+classroomRouter
+	.route("/:classroomId/requesting_members")
+	.get(loggedInVerify, classroomOwnerVerify, classroomController.member_request_get); //!
+
+/** list of all enrolled users for classroom @method GET @endpoint `api/classrooms/:classroomId/enrolled_members`*/
+classroomRouter
+	.route("/:classroomId/enrolled_members")
+	.get(loggedInVerify, classroomController.enrolled_members_get); //!
 
 module.exports = classroomRouter;
