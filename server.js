@@ -6,7 +6,7 @@ const connectDB = require("./config/db"); // Mongoose module for integrating Mon
 const socketio = require("socket.io"); //socket.io module
 
 // DEV-DEPENDENCIES
-// const morgan = require("morgan"); // Morgan module for logging API request objects
+const morgan = require("morgan"); // Morgan module for logging API request objects
 const cors = require("cors"); //CORS module for cross origin resource sharing i.e. between different ports in same ip
 
 //
@@ -22,7 +22,7 @@ const app = express(); // Express app
 app.use(express.static(`${__dirname}/public/upload`));
 
 app.use(express.json()); // Middleware for parsing requests into JSON format and store in req.body
-// app.use(morgan("dev")); // Logger for requests
+app.use(morgan("dev")); // Logger for requests
 app.use(cors()); // Cross origin enabler
 
 // ROUTES ---
