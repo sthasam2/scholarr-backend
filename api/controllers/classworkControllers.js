@@ -22,17 +22,17 @@ const {
 
 // middleware
 const {
-	classworkValidate,
-	assignmentCWValidate,
-	testCWValidate,
-	questionCWValidate,
-	generalCWValidate,
-	materialCWValidate,
+	assignmentCWValidation,
+	testCWValidation,
+	questionCWValidation,
+	generalCWValidation,
+	materialCWValidation,
+	updateQuestionCWValidation,
 } = require("../middleware/validation");
 
 //CUSTOM ENUM
 const classworkType = {
-	ALL: "All",
+	ALL: "All Classwork",
 	ASSIGNMENT: "Asssigment",
 	TEST: "Test",
 	QUESTION: "Question",
@@ -56,54 +56,32 @@ const classworkType = {
  */
 const getClassworkList = async (req, res, reqClassworkType) => {
 	try {
-		const paramsClassroomFound = await Classroom.findOne({ _id: req.params.classroomId });
+		const paramsClassroomFound = (
+			await Classroom.findOne({ _id: req.params.classroomId })
+		).toJSON();
 		if (!paramsClassroomFound) throw nonExistenceError("classroom");
 
-		const reqClassworks = [];
+		let reqClassworks = [];
 		if (reqClassworkType != classworkType.ALL)
 			reqClassworks = paramsClassroomFound.classworks.filter(
 				(doc) => doc.classworkType === reqClassworkType
 			);
 		else reqClassworks = paramsClassroomFound.classworks;
 
-		const errorClassworkArray = [];
-		const classworkDocArray = [];
+		let errorClassworkArray = [];
+		let classworkDocArray = [];
 
 		for (let doc of reqClassworks) {
-			let classworkFound = await ClassworkComment.findById(doc._classroomId);
-			if (!classworkFound) errorClassworkArray.push(doc._classroomId);
+			let classworkFound = await Classwork.findById(doc._classworkId);
+			if (!classworkFound) errorClassworkArray.push(doc._classworkId);
 			else classworkDocArray.push(classworkFound);
 		}
-
-		// if (reqClassworkType === classworkType.ASSIGNMENT)
-		// 	classworkArray = queryClassroomFound.classworks.;
-		// else if (reqClassworkType === classworkType.TEST)
-		// 	classworkArray = queryClassroomFound.classworks.tests;
-		// else if (reqClassworkType === classworkType.QUESTION)
-		// 	classworkArray = queryClassroomFound.classworks.questions;
-		// else if (reqClassworkType === classworkType.MATERIAL)
-		// 	classworkArray = queryClassroomFound.classworks.materials;
-		// else if (reqClassworkType === classworkType.GENERAL)
-		// 	classworkArray = queryClassroomFound.classworks.general;
-		// else if (reqClassworkType === classworkType.ALL)
-		// 	returnDocs = queryClassroomFound.classworks;
-
-		// if (returnDocs != null) {
-		// 	for (let doc of classworkArray) {
-		// 		const classworkFound = await Classwork.findById(doc);
-
-		// 		if (!classworkFound) errorClassworks.push(doc);
-		// 		else classworks.push(doc);
-		// 	}
-
-		// 	returnDocs = classrooms;
-		// }
 
 		return res.status(200).send({
 			success: {
 				status: 200,
 				type: "Request Successful",
-				message: `${reqClassworkType} from ${classroomFound.className}(_id:${classroomFound._id} obtained`,
+				message: `${reqClassworkType} from ${paramsClassroomFound.className}(_id:${paramsClassroomFound._id}) obtained`,
 				classworkType: reqClassworkType,
 				classworks: classworkDocArray,
 				errorClassworks: errorClassworkArray,
@@ -180,41 +158,10 @@ module.exports.classwork_detail_get = async (req, res) => {
 const createClasswork = async (req, res, reqClassworkType) => {
 	try {
 		const classroomFound = req.customField.classroom;
-		const classworkAttributes = {};
+
+		let classworkAttributes = {};
 		classworkAttributes["_classroomId"] = classroomFound._id;
 		classworkAttributes["classworkType"] = reqClassworkType;
-
-		// Validation depending on cases
-		switch (reqClassworkType) {
-			case classworkType.ASSIGNMENT:
-				const { error } = await assignmentCWValidation(req.body);
-				if (error) throw validationError(error);
-
-				break;
-			case classworkType.TEST:
-				const { error } = await testCWValidation(req.body);
-				if (error) throw validationError(error);
-
-				break;
-			case classworkType.QUESTION:
-				const { error } = await questionCWValidation(req.body);
-				if (error) throw validationError(error);
-
-				break;
-			case classworkType.MATERIAL:
-				const { error } = await materialCWValidation(req.body);
-				if (error) throw validationError(error);
-
-				break;
-			case classworkType.GENERAL:
-				const { error } = await generalCWValidation(req.body);
-				if (error) throw validationError(error);
-
-				break;
-			default:
-				throw reqBodyError;
-				break;
-		}
 
 		for (key in req.body) classworkAttributes[key] = req.body[key];
 		const savedClasswork = await new Classwork(classworkAttributes).save();
@@ -226,7 +173,7 @@ const createClasswork = async (req, res, reqClassworkType) => {
 		};
 		await Classroom.updateOne(
 			{ _id: classroomFound._id },
-			{ $push: { classwork: classworkInfo } }
+			{ $push: { classworks: classworkInfo } }
 		);
 
 		//update user
@@ -234,8 +181,9 @@ const createClasswork = async (req, res, reqClassworkType) => {
 			classroom: classroomFound._id,
 			classwork: savedClasswork._id,
 		};
-		let memberIds = [];
-		for (doc of classroomFound.classMembers.enrolledMembers) memberIds.push(doc._memberId);
+		// let memberIds = [];
+		// for (doc of classroomFound.classMembers.enrolledMembers) memberIds.push(doc._memberId);
+		let memberIds = classroomFound.classMembers.enrolledMembers;
 		await User.updateMany(
 			{ _id: { $in: memberIds } },
 			{ $push: { classworks: userClassworkInfo } }
@@ -261,7 +209,15 @@ const createClasswork = async (req, res, reqClassworkType) => {
  * body: {*title: ,description: ,*totalGrade: ,*deadlineDate: , attachments: `files`}
  */
 module.exports.create_assignment_post = async (req, res) => {
-	await createClasswork(req, res, classworkType.ASSIGNMENT);
+	try {
+		const { error } = await assignmentCWValidation(req.body);
+		if (error) throw validationError(error);
+
+		await createClasswork(req, res, classworkType.ASSIGNMENT);
+	} catch (err) {
+		if (process.env.NODE_ENV === "dev") console.error(err);
+		return res.status(400).send(err);
+	}
 };
 
 /** CREATE TEST
@@ -269,7 +225,15 @@ module.exports.create_assignment_post = async (req, res) => {
  * body: {*title: ,description: ,*totalGrade: ,*deadlineDate: ,attachments: `files`}
  */
 module.exports.create_test_post = async (req, res) => {
-	await createClasswork(req, res, classworkType.TEST);
+	try {
+		const { error } = await testCWValidation(req.body);
+		if (error) throw validationError(error);
+
+		await createClasswork(req, res, classworkType.TEST);
+	} catch (err) {
+		if (process.env.NODE_ENV === "dev") console.error(err);
+		return res.status(400).send(err);
+	}
 };
 
 /** CREATE material
@@ -277,7 +241,15 @@ module.exports.create_test_post = async (req, res) => {
  * body: {*title: ,description: , attachments: `files`}
  */
 module.exports.create_material_post = async (req, res) => {
-	await createClasswork(req, res, classworkType.MATERIAL);
+	try {
+		const { error } = await materialCWValidation(req.body);
+		if (error) throw validationError(error);
+
+		await createClasswork(req, res, classworkType.MATERIAL);
+	} catch (err) {
+		if (process.env.NODE_ENV === "dev") console.error(err);
+		return res.status(400).send(err);
+	}
 };
 
 /** CREATE question
@@ -285,7 +257,15 @@ module.exports.create_material_post = async (req, res) => {
  * body: {*title: ,description: ,*deadlineDate: ,}
  */
 module.exports.create_question_post = async (req, res) => {
-	await createClasswork(req, res, classworkType.QUESTION);
+	try {
+		const { error } = await questionCWValidation(req.body);
+		if (error) throw validationError(error);
+
+		await createClasswork(req, res, classworkType.QUESTION);
+	} catch (err) {
+		if (process.env.NODE_ENV === "dev") console.error(err);
+		return res.status(400).send(err);
+	}
 };
 
 /** CREATE general
@@ -293,7 +273,15 @@ module.exports.create_question_post = async (req, res) => {
  * body: {*title: ,description: ,}
  */
 module.exports.create_general_post = async (req, res) => {
-	await createClasswork(req, res, classworkType.GENERAL);
+	try {
+		const { error } = await generalCWValidation(req.body);
+		if (error) throw validationError(error);
+
+		await createClasswork(req, res, classworkType.GENERAL);
+	} catch (err) {
+		if (process.env.NODE_ENV === "dev") console.error(err);
+		return res.status(400).send(err);
+	}
 };
 
 // ! UPDATE methods
@@ -309,35 +297,23 @@ module.exports.update_classwork_patch = async (req, res) => {
 		const reqClassworkType = classworkFound.classworkType;
 
 		// verify req body
-		switch (reqClassworkType) {
-			case classworkType.ASSIGNMENT:
-				const { error } = await updateAssignmentCWValidation(req.body);
-				if (error) throw validationError(error);
-
-				break;
-			case classworkType.GENERAL:
-				const { error } = await updateGeneralCWValidation(req.body);
-				if (error) throw validationError(error);
-
-				break;
-			case classworkType.MATERIAL:
-				const { error } = await updateMaterialCWValidation(req.body);
-				if (error) throw validationError(error);
-
-				break;
-			case classworkType.QUESTION:
-				const { error } = await updateQuestionCWValidation(req.body);
-				if (error) throw validationError(error);
-
-				break;
-			case classworkType.TEST:
-				const { error } = await updateTestCWValidation(req.body);
-				if (error) throw validationError(error);
-
-				break;
-			default:
-				throw reqBodyError;
-				break;
+		if (reqClassworkType === classworkType.ASSIGNMENT) {
+			const { error } = await updateAssignmentCWValidation(req.body);
+			if (error) throw validationError(error);
+		} else if (reqClassworkType === classworkType.GENERAL) {
+			const { error } = await updateGeneralCWValidation(req.body);
+			if (error) throw validationError(error);
+		} else if (reqClassworkType === classworkType.MATERIAL) {
+			const { error } = await updateMaterialCWValidation(req.body);
+			if (error) throw validationError(error);
+		} else if (reqClassworkType === classworkType.QUESTION) {
+			const { error } = await updateQuestionCWValidation(req.body);
+			if (error) throw validationError(error);
+		} else if (reqClassworkType === classworkType.TEST) {
+			const { error } = await updateTestCWValidation(req.body);
+			if (error) throw validationError(error);
+		} else {
+			throw reqBodyError;
 		}
 
 		//classwork update
@@ -356,7 +332,7 @@ module.exports.update_classwork_patch = async (req, res) => {
 				type: "Request Successful!",
 				message: "Classwork Successfully Updated.",
 				classworkType: reqClassworkType,
-				classworkDetails: savedClasswork,
+				classworkId: classworkFound._id,
 			},
 		});
 	} catch (err) {

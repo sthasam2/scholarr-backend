@@ -5,6 +5,7 @@ const userRouter = require("./userRoutes");
 const classroomRouter = require("./classroomRoutes");
 
 const apiController = require("../controllers/apiControllers");
+const classworkRouter = require("./classworkRoutes");
 
 //
 //
@@ -17,5 +18,6 @@ apiRouter.get("/", apiController.api_get);
 apiRouter.use("/auth", authRouter); // extends to `api/auth`
 apiRouter.use("/users", userRouter); // extends to `api/users`
 apiRouter.use("/classrooms", classroomRouter); // extends to `api/classrooms`
+apiRouter.use("/classrooms/cw/", classworkRouter); //extends to `api/classrooms/cw/`
 
 module.exports = apiRouter; // exported module for "apiRoute.js" file

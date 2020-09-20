@@ -175,7 +175,7 @@ module.exports.classworkExistVerify = async (req, res, next) => {
 		if (!req.params.classroomId) throw endPointError;
 		if (!req.params.classworkId) throw endPointError;
 
-		const classroomFound = null;
+		let classroomFound = null;
 		if (req.customField.classroom) {
 			classroomFound = req.customField.classroom;
 		} else {
@@ -185,7 +185,7 @@ module.exports.classworkExistVerify = async (req, res, next) => {
 
 		//check logged in user is the owner or member of classroom
 		let classworkExists = classroomFound.classworks.some(
-			(doc) => doc === req.params.classworkId
+			(doc) => doc._classworkId.toString() === req.params.classworkId
 		);
 		if (!classworkExists)
 			throw {
@@ -197,7 +197,7 @@ module.exports.classworkExistVerify = async (req, res, next) => {
 				},
 			};
 
-		req.customField.classwork = await Classwork.findById(req.params.classworkId);
+		req.customField.classwork = (await Classwork.findById(req.params.classworkId)).toJSON();
 
 		next();
 	} catch (err) {

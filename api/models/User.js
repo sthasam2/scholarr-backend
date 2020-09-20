@@ -34,7 +34,7 @@ const userSchema = mongoose.Schema(
 		classworks: [
 			{
 				classroom: { type: mongoose.Schema.Types.ObjectId, ref: "Classroom" },
-				classwork: [{ type: mongoose.Schema.Types.ObjectId, ref: "Classwork" }],
+				classwork: { type: mongoose.Schema.Types.ObjectId, ref: "Classwork" },
 			},
 		],
 		submissions: [

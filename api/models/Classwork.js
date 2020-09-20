@@ -12,7 +12,7 @@ const classworkSchema = mongoose.Schema(
 		description: { type: String, maxlength: 600, default: null },
 		attachments: [{ name: String, mimeType: String, location: String }],
 		totalGrade: { type: Number, default: null },
-		deadlineDate: { type: Date, default: null, required: true },
+		deadlineDate: { type: Date, default: null },
 		submissions: [
 			{
 				user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

@@ -3,7 +3,7 @@
  * Express Router for handling classroom routes.
  * @endpoint `api/classrooms`
  */
-const { classroomRouter } = require("./classroomRoutes");
+const classworkRouter = require("express").Router();
 
 /**
  * ### Classwork Controller
@@ -34,76 +34,127 @@ const {
 //
 // ! CLASSWORK routes
 
-classroomRouter.get(
+/** get classroom classworks @method GET @endpoint `api/classrooms/:classroomId/classworks`*/
+classworkRouter.get(
 	"/:classroomId/classworks",
 	loggedInVerify,
 	classMemberVerify,
 	classworkController.classworks_get
-); /** get classroom classworks @method GET @endpoint `api/classrooms/:classroomId/classworks`*/
+); //!
+
+/** get classroom classworks @method GET @endpoint `api/classrooms/:classroomId/classworks/assignment`*/
+classworkRouter.get(
+	"/:classroomId/classworks/assignment",
+	loggedInVerify,
+	classMemberVerify,
+	classworkController.assignment_classworks_get
+); //!
+
+/** get classroom classworks @method GET @endpoint `api/classrooms/:classroomId/classworks/test`*/
+classworkRouter.get(
+	"/:classroomId/classworks/test",
+	loggedInVerify,
+	classMemberVerify,
+	classworkController.test_classworks_get
+); //!
+
+/** get classroom classworks @method GET @endpoint `api/classrooms/:classroomId/classworks/question`*/
+classworkRouter.get(
+	"/:classroomId/classworks/question",
+	loggedInVerify,
+	classMemberVerify,
+	classworkController.question_classworks_get
+); //!
+
+/** get classroom classworks @method GET @endpoint `api/classrooms/:classroomId/classworks/material`*/
+classworkRouter.get(
+	"/:classroomId/classworks/material",
+	loggedInVerify,
+	classMemberVerify,
+	classworkController.material_classworks_get
+); //!
+
+/** get classroom classworks @method GET @endpoint `api/classrooms/:classroomId/classworks/general`*/
+classworkRouter.get(
+	"/:classroomId/classworks/general",
+	loggedInVerify,
+	classMemberVerify,
+	classworkController.general_classworks_get
+); //!
 
 // classwork CRUD
-
-classroomRouter.post(
+/** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create_assignment`*/
+classworkRouter.post(
 	"/:classroomId/classworks/create_assignment",
 	loggedInVerify,
 	classroomOwnerVerify,
-	classworkController.create_classwork_post
-); /** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create`*/
+	classworkController.create_assignment_post
+); //!
 
-classroomRouter.post(
+/** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create_test`*/
+classworkRouter.post(
 	"/:classroomId/classworks/create_test",
 	loggedInVerify,
 	classroomOwnerVerify,
-	classworkController.create_classwork_post
-); /** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create`*/
+	classworkController.create_test_post
+); //!
 
-classroomRouter.post(
+/** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create_question`*/
+classworkRouter.post(
 	"/:classroomId/classworks/create_question",
 	loggedInVerify,
 	classroomOwnerVerify,
-	classworkController.create_classwork_post
-); /** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create`*/
+	classworkController.create_question_post
+); //!
 
-classroomRouter.post(
+/** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create_material`*/
+classworkRouter.post(
 	"/:classroomId/classworks/create_material",
 	loggedInVerify,
 	classroomOwnerVerify,
-	classworkController.create_classwork_post
-); /** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create`*/
+	classworkController.create_material_post
+); //!
 
-classroomRouter.post(
+/** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create`*/
+classworkRouter.post(
 	"/:classroomId/classworks/create_general",
 	loggedInVerify,
 	classroomOwnerVerify,
-	classworkController.create_classwork_post
-); /** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create`*/
+	classworkController.create_general_post
+); //!
 
-classroomRouter.get(
-	"/:classroomId/classworks/:classworkId",
+/** get certain classrooms classwork @method GET @endpoint `api/classrooms/:classroomId/classworks/detail/:classworkId`*/
+classworkRouter.get(
+	"/:classroomId/classworks/detail/:classworkId",
 	loggedInVerify,
 	classMemberVerify,
+	classworkExistVerify,
 	classworkController.classwork_detail_get
-); /** get certain classrooms classwork @method GET @endpoint `api/classrooms/:classroomId/classworks/:classworkId`*/
+); //!
 
-classroomRouter.patch(
+/** update classwork @method PATCH @endpoint `api/classrooms/:classroomId/classworks/update/:classworkId`*/
+classworkRouter.patch(
 	"/:classroomId/classworks/update/:classworkId",
 	loggedInVerify,
 	classroomOwnerVerify,
+	classworkExistVerify,
 	classworkController.update_classwork_patch
-); /** update classwork @method PATCH @endpoint `api/classrooms/:classroomId/classworks/update/:classworkId`*/
+); //!
 
-classroomRouter.delete(
+/** delete classwork @method DELETE @endpoint `api/classrooms/:classroomId/classworks/delete/:classworkId/`*/
+classworkRouter.delete(
 	"/:classroomId/classworks/delete/:classworkId",
 	loggedInVerify,
 	classroomOwnerVerify,
+	classworkExistVerify,
 	classworkController.delete_classwork_delete
-); /** delete classwork @method DELETE @endpoint `api/classrooms/:classroomId/classworks/delete/:classworkId/`*/
+); //!
 
 //
 //
 // ! Submission routes
 
-classroomRouter.post(
+classworkRouter.post(
 	"/:classroomId/classworks/:classworkId/submit",
 	loggedInVerify,
 	classMemberVerify,
@@ -111,7 +162,7 @@ classroomRouter.post(
 	submissionController.submit_classwork_post
 ); /** submit classwork @method GET @endpoint `api/classrooms/:classroomId/classworks/:classworkId/submit`*/
 
-classroomRouter.patch(
+classworkRouter.patch(
 	"/:classroomId/classworks/:classworkId/update_submission/:submissionId",
 	loggedInVerify,
 	classMemberVerify,
@@ -119,10 +170,12 @@ classroomRouter.patch(
 	submissionController.update_classwork_submissioin_patch
 ); /** update classwork @method PATCH @endpoint `api/classrooms//:classroomId/classworks/:classworkId/update_submission/:submissionId`*/
 
-classroomRouter.delete(
+classworkRouter.delete(
 	"/:classroomId/classworks/:classworkId/delete_submission/:submissionId",
 	loggedInVerify,
 	classMemberVerify,
 	classworkExistVerify,
 	submissionController.delete_classwork_submissioin_delete
 ); /** delete classwork @method DELETE @endpoint `api/classrooms/:classroomId/classworks/:classworkId/delete_submission/:submissionId`*/
+
+module.exports = classworkRouter;
