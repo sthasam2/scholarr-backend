@@ -212,7 +212,7 @@ module.exports.login_post = async (req, res) => {
 			};
 
 		//check email exists
-		const userFound = await User.findOne({ email: req.body.email });
+		const userFound = (await User.findOne({ email: req.body.email })).toJSON();
 		if (!userFound)
 			throw {
 				error: {
@@ -243,7 +243,7 @@ module.exports.login_post = async (req, res) => {
 				},
 			};
 
-		const loggedUser = await User.findOne({ _id: userFound._id }, { password: 0 });
+		delete userFound.password;
 
 		// assign web token
 		const token = jwt.sign({ _id: userFound._id }, process.env.TOKEN_SECRET);
@@ -255,7 +255,7 @@ module.exports.login_post = async (req, res) => {
 					type: "Successful Request",
 					message: "Login Successful",
 					auth_token: token,
-					user: loggedUser,
+					user: userFound,
 				},
 			});
 	} catch (error) {

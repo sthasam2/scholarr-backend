@@ -21,10 +21,11 @@ module.exports.loggedInVerify = async (req, res, next) => {
 		const token = req.header("auth-token");
 		if (!token) throw { error: { status: 401, message: "Access Denied!" } };
 
-		const verifiedUser = jwt.verify(token, process.env.TOKEN_SECRET);
-		req.user = verifiedUser;
+		const verifiedUser = jwt.verify(token, process.env.TOKEN_SECRET, { expiresIn: "7d" });
 
-		const userFound = await User.findById(req.user._id);
+		// req.user = verifiedUser;
+
+		const userFound = await User.findById(verifiedUser._id);
 		if (!userFound) throw nonExistenceError("login user account");
 
 		req.user = userFound.toJSON();

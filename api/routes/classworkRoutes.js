@@ -37,6 +37,7 @@ const {
 classroomRouter.get(
 	"/:classroomId/classworks",
 	loggedInVerify,
+	classMemberVerify,
 	classworkController.classworks_get
 ); /** get classroom classworks @method GET @endpoint `api/classrooms/:classroomId/classworks`*/
 
@@ -45,48 +46,56 @@ classroomRouter.get(
 classroomRouter.post(
 	"/:classroomId/classworks/create_assignment",
 	loggedInVerify,
+	classroomOwnerVerify,
 	classworkController.create_classwork_post
 ); /** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create`*/
 
 classroomRouter.post(
 	"/:classroomId/classworks/create_test",
 	loggedInVerify,
+	classroomOwnerVerify,
 	classworkController.create_classwork_post
 ); /** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create`*/
 
 classroomRouter.post(
 	"/:classroomId/classworks/create_question",
 	loggedInVerify,
+	classroomOwnerVerify,
 	classworkController.create_classwork_post
 ); /** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create`*/
 
 classroomRouter.post(
 	"/:classroomId/classworks/create_material",
 	loggedInVerify,
+	classroomOwnerVerify,
 	classworkController.create_classwork_post
 ); /** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create`*/
 
 classroomRouter.post(
 	"/:classroomId/classworks/create_general",
 	loggedInVerify,
+	classroomOwnerVerify,
 	classworkController.create_classwork_post
 ); /** create classwork @method POST @endpoint `api/classrooms/:classroomId/classworks/create`*/
 
 classroomRouter.get(
 	"/:classroomId/classworks/:classworkId",
 	loggedInVerify,
+	classMemberVerify,
 	classworkController.classwork_detail_get
 ); /** get certain classrooms classwork @method GET @endpoint `api/classrooms/:classroomId/classworks/:classworkId`*/
 
 classroomRouter.patch(
 	"/:classroomId/classworks/update/:classworkId",
 	loggedInVerify,
+	classroomOwnerVerify,
 	classworkController.update_classwork_patch
 ); /** update classwork @method PATCH @endpoint `api/classrooms/:classroomId/classworks/update/:classworkId`*/
 
 classroomRouter.delete(
 	"/:classroomId/classworks/delete/:classworkId",
 	loggedInVerify,
+	classroomOwnerVerify,
 	classworkController.delete_classwork_delete
 ); /** delete classwork @method DELETE @endpoint `api/classrooms/:classroomId/classworks/delete/:classworkId/`*/
 
