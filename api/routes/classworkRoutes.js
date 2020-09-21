@@ -1,27 +1,10 @@
 /**
  * ### Classroom Router
  * Express Router for handling classroom routes.
- * @endpoint `api/classrooms`
+ * @endpoint `api/classrooms/cw/`
  */
 const classworkRouter = require("express").Router();
 
-/**
- * ### Classwork Controller
- *  Middleware for handling different methods of Classroom
- *
- * #### Available Methods
- * - **Classwork CRUD**
- * 1. classworks_get
- * 2. classwork_detail_get
- * 3. create_classwork_post
- * 4. update_classwork_patch
- * 5. classwork_delete
- *
- * - **Classwork Student Submissions**
- * 1. submit_classwork_post
- * 2. update_classwork_submissioin_patch
- * 3. classwork_submission_delete
- */
 const classworkController = require("../controllers/classworkControllers");
 const submissionController = require("../controllers/submissionControllers");
 const { loggedInVerify } = require("../middleware/verification");
@@ -154,28 +137,49 @@ classworkRouter.delete(
 //
 // ! Submission routes
 
+/** get submissions @method GET @endpoint `api/classrooms/:classroomId/classworks/:classworkId/submissions`*/
+classworkRouter.get(
+	"/:classroomId/classworks/:classworkId/submissions",
+	loggedInVerify,
+	classroomOwnerVerify,
+	classworkExistVerify,
+	submissionController.submissions_get
+); //!
+
+/** get submission detail @method GET @endpoint `api/classrooms/:classroomId/classworks/:classworkId/submissions/detail/:submissionId`*/
+classworkRouter.get(
+	"/:classroomId/classworks/:classworkId/submissions/detail/:submissionId",
+	loggedInVerify,
+	classroomOwnerVerify,
+	classworkExistVerify,
+	submissionController.submission_detail_get
+); //!
+
+/** submit classwork @method GET @endpoint `api/classrooms/:classroomId/classworks/:classworkId/submit`*/
 classworkRouter.post(
 	"/:classroomId/classworks/:classworkId/submit",
 	loggedInVerify,
 	classMemberVerify,
 	classworkExistVerify,
 	submissionController.submit_classwork_post
-); /** submit classwork @method GET @endpoint `api/classrooms/:classroomId/classworks/:classworkId/submit`*/
+); //!
 
+/** update classwork @method PATCH @endpoint `api/classrooms//:classroomId/classworks/:classworkId/update_submission/:submissionId`*/
 classworkRouter.patch(
 	"/:classroomId/classworks/:classworkId/update_submission/:submissionId",
 	loggedInVerify,
 	classMemberVerify,
 	classworkExistVerify,
-	submissionController.update_classwork_submissioin_patch
-); /** update classwork @method PATCH @endpoint `api/classrooms//:classroomId/classworks/:classworkId/update_submission/:submissionId`*/
+	submissionController.update_classwork_submission_patch
+); //!
 
+/** delete classwork @method DELETE @endpoint `api/classrooms/:classroomId/classworks/:classworkId/delete_submission/:submissionId`*/
 classworkRouter.delete(
 	"/:classroomId/classworks/:classworkId/delete_submission/:submissionId",
 	loggedInVerify,
 	classMemberVerify,
 	classworkExistVerify,
-	submissionController.delete_classwork_submissioin_delete
-); /** delete classwork @method DELETE @endpoint `api/classrooms/:classroomId/classworks/:classworkId/delete_submission/:submissionId`*/
+	submissionController.delete_classwork_submission_delete
+); //!
 
 module.exports = classworkRouter;
