@@ -1,6 +1,6 @@
 # SCHOLARR
 
-[![Version badge](https://img.shields.io/badge/Version-v.0.3.3.5-green.svg)](https://shields.io/) [![Version badge](https://img.shields.io/badge/Build-testing-red.svg)](https://shields.io/)
+[![Version badge](https://img.shields.io/badge/Version-v.0.4.0-green.svg)](https://shields.io/) [![Version badge](https://img.shields.io/badge/Build-testing-red.svg)](https://shields.io/)
 
 An online hub for **remote learning**.
 
