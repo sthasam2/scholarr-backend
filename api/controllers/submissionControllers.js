@@ -8,9 +8,13 @@ const {
 	ownerAccessDenailError,
 } = require("../utils/errorMessages");
 
-//
-//
-// Classwork submisssions
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                         			! SUBMISSION methods	                              ////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? READ 			                              ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * ## Classwork Submission
@@ -19,7 +23,7 @@ const {
 module.exports.submissions_get = async (req, res) => {
 	try {
 		// before this check LoggedIn, ClassroomMember, ClassworkExist
-		const reqClasswork = req.customField.classwork;
+		const reqClasswork = req.locals.classwork;
 		let submissions = reqClasswork.submissions;
 
 		delete reqClasswork.submissions;
@@ -38,6 +42,39 @@ module.exports.submissions_get = async (req, res) => {
 	}
 };
 
+module.exports.submission_detail_get = async (req, res) => {
+	try {
+		// before this check LoggedIn, ClassroomMember, ClassworkExist
+		// const reqClasswork = req.locals.classwork;
+		const reqClassroom = req.locals.classroom;
+		const reqUser = req.user;
+
+		//check submission
+		const paramsSubmission = await Submission.findById(req.params.submissionId);
+		if (!paramsSubmission) throw nonExistenceError("Submission");
+
+		let isOwner = paramsSubmission._userId.toString() === reqUser._id.toString();
+		let isClassroomOwner = reqClassroom._creatorId.toString() === reqUser._id.toString();
+		if (!isOwner && !isClassroomOwner) throw ownerAccessDenailError;
+
+		return res.status(200).send({
+			success: {
+				status: 200,
+				type: "Request Successful!",
+				message: "Submission details obtained.",
+				submission: paramsSubmission,
+			},
+		});
+	} catch (err) {
+		if (process.env.NODE_ENV === "dev") console.error(err);
+		return res.status(400).send(err);
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? CREATE 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
 /**
  * ## Classwork Submission
  * @method POST @body {description: , attachements: `files`}
@@ -45,8 +82,7 @@ module.exports.submissions_get = async (req, res) => {
 module.exports.submit_classwork_post = async (req, res) => {
 	try {
 		// before this check LoggedIn, ClassroomMember, ClassworkExist
-		const reqClasswork = req.customField.classwork;
-		// const reqClassroom = req.customField.classroom;
+		const reqClasswork = req.locals.classwork;
 		const reqUser = req.user;
 
 		// Validate req.body
@@ -54,12 +90,26 @@ module.exports.submit_classwork_post = async (req, res) => {
 		if (error) throw validationError(error);
 
 		// Create
-		let submission = {};
-		submission["_userId"] = req.user._id;
-		submission["_classworkId"] = reqClasswork._id;
-		for (let key in req.body) submission[key] = req.body[key];
+		let submissionAttributes = {};
+		submissionAttributes["_userId"] = req.user._id;
+		submissionAttributes["_classworkId"] = reqClasswork._id;
 
-		const savedSubmission = await new Submission(submission).save();
+		for (let key in req.body) {
+			submissionAttributes[key] = req.body[key];
+		}
+
+		let attachments = [];
+		if (req.files) {
+			for (key in req.files)
+				attachments.push({
+					name: req.files[key].filename,
+					mimeType: req.files[key].mimetype,
+					location: req.files[key].path,
+				});
+		}
+		submissionAttributes["attachments"] = attachments;
+
+		const savedSubmission = await new Submission(submissionAttributes).save();
 
 		// Update Users, Classwork
 		await Classwork.updateOne(
@@ -90,11 +140,13 @@ module.exports.submit_classwork_post = async (req, res) => {
 	}
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? UPDATE 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
 module.exports.update_classwork_submission_patch = async (req, res) => {
 	try {
 		// before this check LoggedIn, ClassroomMember, ClassworkExist
-		// const reqClasswork = req.customField.classwork;
-		// const reqClassroom = req.customField.classroom;
 		const reqUser = req.user;
 
 		//check submission
@@ -115,10 +167,23 @@ module.exports.update_classwork_submission_patch = async (req, res) => {
 				updateQuery.$set[key] = req.body[key];
 		}
 
-		// TODO files handling
+		let attachments = [];
+		if (req.files) {
+			for (key in req.files)
+				attachments.push({
+					name: req.files[key].filename,
+					mimeType: req.files[key].mimetype,
+					location: req.files[key].path,
+				});
+		}
+
+		updateQuery.$set["attachments"] = attachments;
 
 		// Update Users, Classwork
 		await Submission.updateOne({ _id: paramsSubmission._id }, updateQuery);
+
+		//delete previous files
+		await attachmentsDelete(paramsSubmission.attachments);
 
 		return res.status(200).send({
 			success: {
@@ -134,11 +199,15 @@ module.exports.update_classwork_submission_patch = async (req, res) => {
 	}
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? DELETE 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
 module.exports.delete_classwork_submission_delete = async (req, res) => {
 	try {
 		// before this check LoggedIn, ClassroomMember, ClassworkExist
-		const reqClasswork = req.customField.classwork;
-		const reqClassroom = req.customField.classroom;
+		const reqClasswork = req.locals.classwork;
+		const reqClassroom = req.locals.classroom;
 		const reqUser = req.user;
 
 		//check submission
@@ -167,40 +236,14 @@ module.exports.delete_classwork_submission_delete = async (req, res) => {
 			}
 		);
 
+		//delete previous files
+		await attachmentsDelete(paramsSubmission.attachments);
+
 		return res.status(200).send({
 			success: {
 				status: 200,
 				type: "Request Successful!",
 				message: "Submission Deleted",
-				submission: paramsSubmission,
-			},
-		});
-	} catch (err) {
-		if (process.env.NODE_ENV === "dev") console.error(err);
-		return res.status(400).send(err);
-	}
-};
-
-module.exports.submission_detail_get = async (req, res) => {
-	try {
-		// before this check LoggedIn, ClassroomMember, ClassworkExist
-		// const reqClasswork = req.customField.classwork;
-		const reqClassroom = req.customField.classroom;
-		const reqUser = req.user;
-
-		//check submission
-		const paramsSubmission = await Submission.findById(req.params.submissionId);
-		if (!paramsSubmission) throw nonExistenceError("Submission");
-
-		let isOwner = paramsSubmission._userId.toString() === reqUser._id.toString();
-		let isClassroomOwner = reqClassroom._creatorId.toString() === reqUser._id.toString();
-		if (!isOwner && !isClassroomOwner) throw ownerAccessDenailError;
-
-		return res.status(200).send({
-			success: {
-				status: 200,
-				type: "Request Successful!",
-				message: "Submission details obtained.",
 				submission: paramsSubmission,
 			},
 		});

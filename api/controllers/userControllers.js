@@ -1,38 +1,26 @@
 //models
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+
+//middleware
 const { updateUserValidation } = require("../middleware/validation");
-// const { findOneUser } = require("../middleware/utilityFunctions");
-const { upload, imagesUpload } = require("../middleware/fileUpload");
+
+//utils
 const { wrongPwError, validationError, nonExistenceError } = require("../utils/errorMessages");
+const { profileAvatarCoverDelete } = require("../utils/fileHandling");
 
-// const multer = require("multer");
-// const path = require("path");
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                         			! USER methods			                              ////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// const storage = multer.diskStorage({
-// 	destination: `${__dirname}/public/upload`,
-// 	filename: function (req, file, cb) {
-// 		cb(
-// 			null,
-// 			req.user._id + "-" + file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-// 			//this will result in the filename of uploaded file as `[id of user]-[fieldname ie avatar or cover]-timestamp.extension`
-// 		);
-// 	},
-// });
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? READ	 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
-// const upload = multer({ storage: storage }).fields([
-// 	{ name: "avatar", maxCount: 1 },
-// 	{ name: "cover", maxCount: 1 },
-// ]);
-
-//
-//
-// GET all users
+/** ### Retrieve list of users
+ */
 module.exports.users_get = async (req, res) => {
-	// const users=
 	try {
-		// const users = await User.find(); // Good only for small userbase
-
 		// for millions of users and customized use async iterator method method
 		const users = [];
 		for await (const doc of User.find()) {
@@ -55,10 +43,7 @@ module.exports.users_get = async (req, res) => {
 	}
 };
 
-//
-//
-// POST group of users
-/**
+/** ### Recieve details ofmultiple  users
  *
  * POST body: { userGroup: [_id1, _id2, _id3, ...],}
  */
@@ -94,9 +79,8 @@ module.exports.group_users_post = async (req, res) => {
 	}
 };
 
-//
-//
-// GET User Details
+/** ### Recieve User Details
+ */
 module.exports.user_detail_private_get = async (req, res) => {
 	try {
 		// const userExists = await findOneUser(req.params.userId);
@@ -117,6 +101,7 @@ module.exports.user_detail_private_get = async (req, res) => {
 	}
 };
 
+/** ### Retrieve Detail of particular user */
 module.exports.user_detail_get = async (req, res) => {
 	try {
 		// const userExists = await findOneUser(req.params.userId);
@@ -148,7 +133,11 @@ module.exports.user_detail_get = async (req, res) => {
 	}
 };
 
-/** //* Controls PROFILE UPDATE PATCH requests.
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? UPDATE 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+/**  Controls PROFILE UPDATE PATCH requests.
  *
  * PATCH body: { firstName: , middleName: , lastName: , bio: , dateOfBirth: , password: ,}
  */
@@ -157,7 +146,7 @@ module.exports.update_user_patch = async (req, res) => {
 		const { error } = await updateUserValidation(req.body);
 		if (error) throw validationError(error);
 
-		const userToUpdate = await await (await User.findOne({ _id: req.params.userId })).toJSON();
+		const userToUpdate = (await User.findOne({ _id: req.params.userId })).toJSON();
 		if (!userToUpdate) throw nonExistenceError("user");
 
 		const validPass = await bcrypt.compare(req.body.password, userToUpdate.password);
@@ -165,6 +154,19 @@ module.exports.update_user_patch = async (req, res) => {
 
 		// update only supplied fields
 		let updateQuery = { $set: {} };
+
+		if (req.files) {
+			updateQuery.$set["avatarImage"] = {
+				name: req.files.avatar[0].filename,
+				mimeType: req.files.avatar[0].mimetype,
+				location: req.files.avatar[0].path,
+			};
+			updateQuery.$set["coverImage"] = {
+				name: req.files.cover[0].filename,
+				mimeType: req.files.cover[0].mimetype,
+				location: req.files.cover[0].path,
+			};
+		}
 
 		for (let key in req.body) {
 			if (key != "password") {
@@ -180,57 +182,13 @@ module.exports.update_user_patch = async (req, res) => {
 			updateQuery //using $set method here to update values
 		);
 
+		await profileAvatarCoverDelete(userToUpdate.avatarImage, userToUpdate.coverImage);
+
 		return res.status(200).send({
 			Success: {
 				status: 200,
 				message: "Profile successfully updated",
 			},
-		});
-	} catch (err) {
-		if (process.env.NODE_ENV === "dev") console.error(err);
-		return res.status(400).send(err);
-	}
-};
-
-/**
- * //* controls the USER IMAGE UPLOAD PATCH request
- *
- * PATCH method : multipart/form-data  [Since we're dealing with files, JSON is not usable]
- *
- * PATCH form body [key->file i.e. a key which coreesponds to "name" field in html input]
- * @key_1 avatar - for the profile picture or avatar
- * @key_2 cover - for the coverimage
- *
- */
-module.exports.upload_user_images_patch = async (req, res) => {
-	try {
-		const userFound = await User.findOne({ _id: req.params.userId });
-		if (!userFound)
-			throw {
-				error: {
-					status: 404,
-					message: "associated user not found",
-				},
-			};
-
-		if (req.user._id != userFound._id)
-			throw {
-				error: {
-					status: 401,
-					type: "Access Denied!",
-					message: "You do not have permission to edit this!",
-				},
-			};
-
-		// console.log(req.files);
-		imagesUpload(req, res, (err) => {
-			console.log(req);
-			if (err) {
-				return res.status(400).send(err);
-			} else {
-				console.log(req.files);
-				res.send("yahoo");
-			}
 		});
 	} catch (err) {
 		if (process.env.NODE_ENV === "dev") console.error(err);

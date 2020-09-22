@@ -1,32 +1,9 @@
-/**
- * *Authentication Controllers
- *
- * *Contails all modules for controlling activities for routes defined in `routes/authRoutes.js`
- * @available_controllers -
- * 1. user_get
- * 2. register_get
- * 3. register_post
- * 4. login_get
- * 5. login_post
- * 6. email_confirmation_handler_get
- * 7. resend_email_confirmation_post
- * 8. password_reset_email_post
- * 9. password_reset_get
- * 10. password_reset_handler_post
- * 11. delete_account_email_post
- * 12. delete_account_get
- * 13. delete_account_handler_post
- */
-
-// require("dotenv").config({path: ''});
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // models
 const User = require("../models/User");
 const Token = require("../models/Token");
-
-// middleware
 
 //validation
 const {
@@ -36,6 +13,7 @@ const {
 	resendConfEmailValidation,
 	deleteAccountValidation,
 } = require("../middleware/validation");
+
 // emailer
 const {
 	confirmEmailSender,
@@ -44,11 +22,8 @@ const {
 	deleteAccountEmailSender,
 } = require("../middleware/emailSender");
 
+// utils
 const { nonExistenceError, errorMessage } = require("../utils/errorMessages");
-
-// modules
-
-// exports
 
 // user GET
 /**
@@ -86,11 +61,11 @@ module.exports.auth_get = (req, res) => {
 	});
 };
 
-//
-//* REGISTRATION ----------------------------
-//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                         			! REGISTRATION			                              ////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/** //* Controls REGISTER GET requests. */
+/** Controls REGISTER GET requests. */
 module.exports.register_get = (req, res) => {
 	res.send({
 		location: "REGISTER page",
@@ -103,7 +78,7 @@ module.exports.register_get = (req, res) => {
 	});
 };
 
-/** //* Controls REGISTER POST requests.
+/** Controls REGISTER POST requests.
  *
  * POST body: { username: , email: , password: }
  */
@@ -180,11 +155,11 @@ module.exports.register_post = async (req, res) => {
 	}
 };
 
-//
-//* LOGIN -------------------------------------
-//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                         			! LOGIN							                              ////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/** //* Controls LOGIN GET request. */
+/** Controls LOGIN GET request. */
 module.exports.login_get = (req, res) => {
 	res.send({
 		location: "LOGIN_PAGE",
@@ -264,11 +239,11 @@ module.exports.login_post = async (req, res) => {
 	}
 };
 
-//
-//* CONFIRMATION -------------------------------
-//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                         			! CONFIRMATION	    		                          ////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/** //* Confirmation handler GET */
+/** Confirmation handler GET */
 module.exports.email_confirmation_handler_get = async (req, res) => {
 	try {
 		const urlToken = req.params.token; //retrieve token from url
@@ -315,7 +290,7 @@ module.exports.email_confirmation_handler_get = async (req, res) => {
 	}
 };
 
-/** //* Sends the email confirmation email again
+/** Sends the email confirmation email again
  *
  * POST body: { email: , password: }
  */
@@ -364,11 +339,11 @@ module.exports.resend_email_confirmation_post = async (req, res) => {
 	}
 };
 
-//
-// //* RESET PASSWORD --------------------------
-//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                         			! RESET PASSWORD		                              ////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/** //* Sends email for password reset
+/** Sends email for password reset
  *
  * POST body: { email: }
  */
@@ -415,7 +390,7 @@ module.exports.reset_password_email_post = async (req, res) => {
 	}
 };
 
-/** //* GET request for token verification for password reset
+/** GET request for token verification for password reset
  *
  * @returns Token, User
  */
@@ -450,7 +425,7 @@ module.exports.reset_password_get = async (req, res) => {
 	}
 };
 
-/** //* Reset password handler
+/** Reset password handler
  *
  * PATCH body: { _userId: , token: , new_password: }
  */
@@ -496,11 +471,11 @@ module.exports.reset_password_handler_patch = async (req, res) => {
 	}
 };
 
-//
-// //* ACCOUNT DELETEION ---------------------------
-//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                         			! ACCOUNT DELETE		                              ////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/** //* Sends email for account delete
+/** Sends email for account delete
  *
  * POST body: { email: , password: }
  */
@@ -550,7 +525,7 @@ module.exports.delete_account_email_post = async (req, res) => {
 	}
 };
 
-/** //* GET request for token verification for account deletion
+/** GET request for token verification for account deletion
  *
  * @returns Token, User object
  */
@@ -593,7 +568,7 @@ module.exports.delete_account_get = async (req, res) => {
 	}
 };
 
-/** //* Controller for account deletion
+/** Controller for account deletion
  *
  * DELETE body: { email: , token: , password: }
  */

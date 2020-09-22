@@ -102,7 +102,7 @@ module.exports.classroomOwnerVerify = async (req, res, next) => {
 		if (!isCreator) throw ownerAccessDenailError;
 
 		// CREATE NEW FIELD
-		req["customField"] = {
+		req["locals"] = {
 			classroom: classroomFound.toJSON(),
 			reqUser: { isCreator: isCreator },
 		};
@@ -146,7 +146,7 @@ module.exports.classMemberVerify = async (req, res, next) => {
 		if (!isCreator && !isMember) throw memberAccessDenailError;
 
 		// CREATE NEW FIELD
-		req["customField"] = {
+		req["locals"] = {
 			classroom: classroomFound.toJSON(),
 			reqUser: { isCreator: isCreator, isMember: isMember },
 		};
@@ -176,8 +176,8 @@ module.exports.classworkExistVerify = async (req, res, next) => {
 		if (!req.params.classworkId) throw endPointError;
 
 		let classroomFound = null;
-		if (req.customField.classroom) {
-			classroomFound = req.customField.classroom;
+		if (req.locals.classroom) {
+			classroomFound = req.locals.classroom;
 		} else {
 			classroomFound = await Classroom.findOne({ _id: req.params.classroomId });
 			if (!classroomFound) throw nonExistenceError("classroom");
@@ -197,7 +197,7 @@ module.exports.classworkExistVerify = async (req, res, next) => {
 				},
 			};
 
-		req.customField.classwork = (await Classwork.findById(req.params.classworkId)).toJSON();
+		req.locals.classwork = (await Classwork.findById(req.params.classworkId)).toJSON();
 
 		next();
 	} catch (err) {

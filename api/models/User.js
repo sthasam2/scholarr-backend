@@ -18,12 +18,14 @@ const userSchema = mongoose.Schema(
 		bio: { type: String, maxlength: 1000, default: null },
 		dateOfBirth: { type: Date, default: null, max: Date.now },
 		avatarImage: {
-			data: { type: String, default: null },
-			contentType: { type: String, default: null },
+			name: String,
+			mimeType: String,
+			location: String,
 		},
 		coverImage: {
-			data: { type: String, default: null },
-			contentType: { type: String, default: null },
+			name: String,
+			mimeType: String,
+			location: String,
 		},
 		classroom: {
 			classesTeaching: [{ type: mongoose.Schema.Types.ObjectId, ref: "Classroom" }],

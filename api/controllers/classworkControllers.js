@@ -1,12 +1,3 @@
-/**
- * classworks_get
- * classwork_detail_get
- * create_classwork_post
- * update_classwork_patch
- * submit_classwork_post
- * update_classwork_submissioin_patch
- */
-
 // models
 const Classroom = require("../models/Classroom");
 const User = require("../models/User");
@@ -28,7 +19,12 @@ const {
 	generalCWValidation,
 	materialCWValidation,
 	updateQuestionCWValidation,
+	updateAssignmentCWValidation,
+	updateGeneralCWValidation,
+	updateMaterialCWValidation,
+	updateTestCWValidation,
 } = require("../middleware/validation");
+const { attachmentsDelete } = require("../utils/fileHandling");
 
 //CUSTOM ENUM
 const classworkType = {
@@ -40,16 +36,15 @@ const classworkType = {
 	GENERAL: "Generic",
 };
 
-//
-//
-// Classwork methods
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                         			! CLASSWORK methods	                              ////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//
-//
-// ! GET METHODS
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? READ 			                              ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Get a list of all the classworks of given type
+/** ### Get a list of all the classworks of given type
  * @param {object} req
  * @param {object} res
  * @param {string} reqClassworkType
@@ -93,49 +88,49 @@ const getClassworkList = async (req, res, reqClassworkType) => {
 	}
 };
 
-/** list view of classworks
+/** ### list view of classworks
  * @method GET
  */
 module.exports.classworks_get = async (req, res) => {
 	await getClassworkList(req, res, classworkType.ALL);
 };
 
-/** list of assignments
+/** ### list of assignments
  * @method GET
  */
 module.exports.assignment_classworks_get = async (req, res) => {
 	await getClassworkList(req, res, classworkType.ASSIGNMENT);
 };
 
-/** list of TEST
+/** ### list of TEST
  * @method GET
  */
 module.exports.test_classworks_get = async (req, res) => {
 	await getClassworkList(req, res, classworkType.TEST);
 };
 
-/** list of questions
+/** ### list of questions
  * @method GET
  */
 module.exports.question_classworks_get = async (req, res) => {
 	await getClassworkList(req, res, classworkType.QUESTION);
 };
 
-/** list of materials
+/** ### list of materials
  * @method GET
  */
 module.exports.material_classworks_get = async (req, res) => {
 	await getClassworkList(req, res, classworkType.MATERIAL);
 };
 
-/** list of general
+/** ### list of general
  * @method GET
  */
 module.exports.general_classworks_get = async (req, res) => {
 	await getClassworkList(req, res, classworkType.GENERAL);
 };
 
-/** Read Detail view of a classwork
+/** ### Read Detail view of a classwork
  *
  * **NOTE: must use classworkExistVerify, classMemberVerify middlewares before this**
  * @method GET
@@ -144,7 +139,7 @@ module.exports.classwork_detail_get = async (req, res) => {
 	try {
 		//classwork first check classwork belongs to classroom, then check classmember
 		// NOTE: must use classworkExistVerify, classMemberVerify middlewares before this
-		let paramClasswork = req.customField.classwork;
+		let paramClasswork = req.locals.classwork;
 
 		res.status(200).send({
 			success: { status: 200, type: "Request Successful", classwork: paramClasswork },
@@ -152,16 +147,35 @@ module.exports.classwork_detail_get = async (req, res) => {
 	} catch (err) {}
 };
 
-//
-//
-// ! CREATE methods
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? CREATE 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *
+ * @param {object} req
+ * @param {object} res
+ * @param {string} reqClassworkType
+ */
 const createClasswork = async (req, res, reqClassworkType) => {
 	try {
-		const classroomFound = req.customField.classroom;
+		const classroomFound = req.locals.classroom;
 
 		let classworkAttributes = {};
 		classworkAttributes["_classroomId"] = classroomFound._id;
 		classworkAttributes["classworkType"] = reqClassworkType;
+
+		let attachments = [];
+		if (req.files) {
+			for (key in req.files)
+				attachments.push({
+					name: req.files[key].filename,
+					mimeType: req.files[key].mimetype,
+					location: req.files[key].path,
+				});
+		}
+
+		classworkAttributes["attachments"] = attachments;
 
 		for (key in req.body) classworkAttributes[key] = req.body[key];
 		const savedClasswork = await new Classwork(classworkAttributes).save();
@@ -189,7 +203,7 @@ const createClasswork = async (req, res, reqClassworkType) => {
 			{ $push: { classworks: userClassworkInfo } }
 		);
 
-		return res.status(200).send({
+		return res.status(201).send({
 			success: {
 				status: 201,
 				type: "Request Successful!",
@@ -204,7 +218,7 @@ const createClasswork = async (req, res, reqClassworkType) => {
 	}
 };
 
-/** CREATE assignment
+/** ### CREATE assignment
  * @method POST @type form/multipart
  * body: {*title: ,description: ,*totalGrade: ,*deadlineDate: , attachments: `files`}
  */
@@ -220,7 +234,7 @@ module.exports.create_assignment_post = async (req, res) => {
 	}
 };
 
-/** CREATE TEST
+/** ### CREATE TEST
  * @method POST @type form/multipart
  * body: {*title: ,description: ,*totalGrade: ,*deadlineDate: ,attachments: `files`}
  */
@@ -236,7 +250,7 @@ module.exports.create_test_post = async (req, res) => {
 	}
 };
 
-/** CREATE material
+/** ### CREATE material
  * @method POST @type form/multipart
  * body: {*title: ,description: , attachments: `files`}
  */
@@ -252,7 +266,7 @@ module.exports.create_material_post = async (req, res) => {
 	}
 };
 
-/** CREATE question
+/** ### CREATE question
  * @method POST
  * body: {*title: ,description: ,*deadlineDate: ,}
  */
@@ -268,7 +282,7 @@ module.exports.create_question_post = async (req, res) => {
 	}
 };
 
-/** CREATE general
+/** ### CREATE general
  * @method POST
  * body: {*title: ,description: ,}
  */
@@ -284,16 +298,18 @@ module.exports.create_general_post = async (req, res) => {
 	}
 };
 
-// ! UPDATE methods
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? UPDATE 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
-/** UPDATE classwork
+/** ### UPDATE classwork
  * @method PATCH @type form/multipart
  * body: `REFER TO CORRESPONDING CLASSWORK CREATE BODY WHERE NO FIELD IS REQUIRED`
  */
 module.exports.update_classwork_patch = async (req, res) => {
 	try {
 		//first check classroom owner, clssworkExists, then update
-		const classworkFound = req.customField.classwork;
+		const classworkFound = req.locals.classwork;
 		const reqClassworkType = classworkFound.classworkType;
 
 		// verify req body
@@ -324,7 +340,22 @@ module.exports.update_classwork_patch = async (req, res) => {
 				updateQuery.$set[key] = req.body[key];
 		}
 
+		let attachments = [];
+		if (req.files) {
+			for (key in req.files)
+				attachments.push({
+					name: req.files[key].filename,
+					mimeType: req.files[key].mimetype,
+					location: req.files[key].path,
+				});
+		}
+
+		updateQuery.$set["attachments"] = attachments;
+
 		await Classwork.updateOne({ _id: classworkFound._id }, updateQuery);
+
+		//delete previous files
+		await attachmentsDelete(classworkFound.attachments);
 
 		return res.status(200).send({
 			success: {
@@ -341,16 +372,18 @@ module.exports.update_classwork_patch = async (req, res) => {
 	}
 };
 
-// ! DELETE methods
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? DELETE 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
-/** DELETE Classwork
+/** ### DELETE Classwork
  * @method DELETE
  */
 module.exports.delete_classwork_delete = async (req, res) => {
 	try {
 		//check loggedIn,classroomOwner, classworkExist
-		const reqClassroom = req.customField.classroom;
-		const reqClasswork = req.customField.classwork;
+		const reqClassroom = req.locals.classroom;
+		const reqClasswork = req.locals.classwork;
 
 		//delete
 		await Classwork.deleteOne({ _id: reqClasswork._id });
@@ -368,6 +401,9 @@ module.exports.delete_classwork_delete = async (req, res) => {
 			{ _id: { $in: memberIds } },
 			{ $pull: { "classworks.classwork": reqClasswork._id } }
 		);
+
+		await attachmentsDelete(reqClasswork.assignments);
+
 		return res.status(200).send({
 			success: {
 				status: 200,

@@ -7,7 +7,7 @@ const classroomRouter = require("express").Router();
 
 /**
  * ### Classroom Controller
- *  Middleware for handling different methods of Classroom
+ *  Middleware for handling different methodsaccept invited users to classroom @method POST @endpoint `api/classrooms/:classroomId/accept_invite/:userId` of Classroom
  *
  * #### Available Methods
  * - **Classroom CRUD**
@@ -68,29 +68,34 @@ classroomRouter.delete(
 	classroomController.delete_class_delete
 ); //!! //!!
 
-//
-//
-// CLASSROOM MEMBER METHODS
-// todo classroom invite, accept, request{via code}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                         			! CLASSROOM ROUTES	                              ////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//
-//
-//INVITE
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? CREATE 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////
+////////                  		* INVITE                    	    ////////////
+////////////////////////////////////////////////////////////////////////////
 
 /** invite users to classroom @method POST @endpoint `api/classrooms/invite/:classroomId/`*/
 classroomRouter
 	.route("/:classroomId/invite/user")
 	.post(loggedInVerify, classroomOwnerVerify, classroomController.classroom_invite_post); //!!
 
-//
-//
-//REQUEST
+////////////////////////////////////////////////////////////////////////////
+////////                  		* REQUEST                    	    ////////////
+////////////////////////////////////////////////////////////////////////////
+
 /** request to become users for classroom @method POST @endpoint `api/classrooms/request`*/
 classroomRouter.route("/request").post(loggedInVerify, classroomController.classroom_request_post); //!!
 
-//
-//
-//ACCEPT
+////////////////////////////////////////////////////////////////////////////
+////////                  		* ACCEPT                    	    ////////////
+////////////////////////////////////////////////////////////////////////////
+
 /** accept requesting members for classroom @method POST @endpoint `api/classrooms/:classroomId/accept_request/:userId`*/
 classroomRouter
 	.route("/:classroomId/accept_request/:userId")
@@ -100,9 +105,11 @@ classroomRouter
 classroomRouter
 	.route("/:classroomId/accept_invite/:userId")
 	.get(classroomController.accept_invite_get); //!
-//
-//
-// LEAVE/DELETE
+
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? DELETE 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
 /** remove invitation classroom @method POST @endpoint `api/classrooms/:classroomId/remove_invite/:userId`*/
 classroomRouter
 	.route("/:classroomId/remove_invite/:userId")
@@ -118,9 +125,10 @@ classroomRouter
 	.route("/:classroomId/remove_enrolled/:userId")
 	.get(loggedInVerify, classroomOwnerVerify, classroomController.remove_enrollment_get); //!!
 
-//
-//
-// GET LIST OF MEMBERS
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? READ	 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
 /** get list of invited users for classroom @method GET @endpoint `api/classrooms/:classroomId/invited_members`*/
 classroomRouter
 	.route("/:classroomId/invited_members")

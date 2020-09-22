@@ -1,11 +1,3 @@
-/**
- * classes_get
- * class_detail_get
- * user_classes_get
- * create_class_post
- * update_class_patch
- */
-
 // models
 const Classroom = require("../models/Classroom");
 const User = require("../models/User");
@@ -45,9 +37,13 @@ const membershipActionType = {
 	ENROLL: "Enrollment",
 };
 
-//
-//
-// Classroom methods
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                         			! CLASSROOM methods	                              ////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? READ 			                              ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
 module.exports.classes_get = async (req, res) => {
 	try {
@@ -70,8 +66,7 @@ module.exports.classes_get = async (req, res) => {
 	}
 };
 
-/**
- * ### class_detail_get
+/** ### class_detail_get
  * **prerequisites: loggedInVerify, classMemberVerify**
  * @param {object} req
  * @param {object} res
@@ -79,11 +74,11 @@ module.exports.classes_get = async (req, res) => {
  */
 module.exports.class_detail_get = async (req, res) => {
 	try {
-		const classroomFound = req.customField.classroom;
+		const classroomFound = req.locals.classroom;
 		let classroom = null;
 
-		if (req.customField.reqUser.isCreator) classroom = classroomFound;
-		else if (req.customField.reqUser.isMember)
+		if (req.locals.reqUser.isCreator) classroom = classroomFound;
+		else if (req.locals.reqUser.isMember)
 			classroom = {
 				_id: classroomFound._id,
 				createdAt: classroomFound.createdAt,
@@ -116,7 +111,7 @@ module.exports.user_classes_get = async (req, res) => {
 		const userFound = req.user;
 
 		const classesAttendingFound = await Classroom.find({
-			_id: { $in: userFound.classroom.classesAtending },
+			_id: { $in: userFound.classroom.classesAttending },
 		});
 		const classesTeachingFound = await Classroom.find({
 			_id: { $in: userFound.classroom.classesTeaching },
@@ -154,8 +149,11 @@ module.exports.user_classes_get = async (req, res) => {
 	}
 };
 
-/**
- * CREATE classroom
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? CREATE		                              ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+/** ### CREATE classroom
  * **prerequisites: loggedInVerify**
  * POST body = {className*: , classDescription: , classSubject: , affiliatedInstitution: ,}
  */
@@ -210,8 +208,11 @@ module.exports.create_class_post = async (req, res) => {
 	}
 };
 
-/**
- * ### Update class details
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? UPDATE 			                            ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+/** ###  Update class details
  * **prerequisites: loggedInVerify, classOwnerVerify**
  * PATCH body: { className*: ,classDescription: ,classSubject: ,affiliatedInstitution: ,}
  */
@@ -220,7 +221,7 @@ module.exports.update_class_patch = async (req, res) => {
 		const { error } = updateClassroomValidation(req.body);
 		if (error) throw validationError(error);
 
-		const classroomFound = req.customField.classroom;
+		const classroomFound = req.locals.classroom;
 
 		const updateQuery = { $set: {} };
 		for (let key in req.body) {
@@ -246,8 +247,11 @@ module.exports.update_class_patch = async (req, res) => {
 	}
 };
 
-/**
- * ### Delete classroom
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? DELETE		                              ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+/** ###  Delete classroom
  * **pre-requisites: loggedInVerify, classroomOwnerVerify
  * @param {object} req
  * @param {object} res
@@ -255,7 +259,7 @@ module.exports.update_class_patch = async (req, res) => {
 module.exports.delete_class_delete = async (req, res) => {
 	try {
 		// GET CLASSROOM
-		const classroomFound = req.customField.classroom;
+		const classroomFound = req.locals.classroom;
 
 		// GET MEMBERS
 		let classroomMembers = [];
@@ -299,11 +303,15 @@ module.exports.delete_class_delete = async (req, res) => {
 	}
 };
 
-//
-//
-// ? classroom members methods
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                         		! CLASSROOM MEMBER methods	                        ////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? READ 			                              ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+/** ### Get List of Members based on memberType
  *
  * @param {object} req
  * @param {object} res
@@ -360,9 +368,30 @@ const getMemberList = async (req, res, reqMemberType) => {
 	}
 };
 
-//invite
-/**
- * Invite bulk users to class
+//invited members
+module.exports.invited_members_get = async (req, res) => {
+	await getMemberList(req, res, memberType.INVITED);
+};
+
+//requesting members
+module.exports.member_request_get = async (req, res) => {
+	await getMemberList(req, res, memberType.REQUESTING);
+};
+
+//enrolled members
+module.exports.enrolled_members_get = async (req, res) => {
+	getMemberList(req, res, memberType.ENROLLED);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? CREATE		                              ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////
+////////                  		* INVITE                          ////////////
+////////////////////////////////////////////////////////////////////////////
+
+/** ### Invite bulk users to class
  * @method POST body [ {userId: , username: , email: } ]
  * NOTE: You can use any of the attributes just make sure to use one
  */
@@ -451,8 +480,7 @@ module.exports.classroom_bulk_invite_post = async (req, res) => {
 	}
 };
 
-/**
- * Invite single user to class
+/** ### Invite single user to class
  * @method POST body [ {userId: , username: , email: } ]
  * NOTE: You can use any of the attributes just make sure to use one
  */
@@ -473,7 +501,7 @@ module.exports.classroom_invite_post = async (req, res) => {
 		if (error) throw validationError(error);
 
 		// check if classroom exists
-		const classroomFound = req.customField.classroom;
+		const classroomFound = req.locals.classroom;
 		// const classroomFound = await Classroom.findById(req.params.classroomId);
 		// if (!classroomFound) throw nonExistenceError("classroom");
 
@@ -557,11 +585,6 @@ module.exports.classroom_invite_post = async (req, res) => {
 	}
 };
 
-//invited members
-module.exports.invited_members_get = async (req, res) => {
-	await getMemberList(req, res, memberType.INVITED);
-};
-
 //accept invite
 module.exports.accept_invite_get = async (req, res) => {
 	try {
@@ -618,9 +641,12 @@ module.exports.accept_invite_get = async (req, res) => {
 	}
 };
 
+////////////////////////////////////////////////////////////////////////////
+////////                  		* REQUEST                         ////////////
+////////////////////////////////////////////////////////////////////////////
+
 //request via class code
-/**
- * body { classCode: ,}
+/** ### body { classCode: ,}
  */
 module.exports.classroom_request_post = async (req, res) => {
 	try {
@@ -692,11 +718,11 @@ module.exports.classroom_request_post = async (req, res) => {
 module.exports.accept_request_get = async (req, res) => {
 	try {
 		//check user exists
-		const userToAccept = await User.findById(req.params.userId);
+		const userToAccept = (await User.findById(req.params.userId)).toJSON();
 		if (!userToAccept) throw nonExistenceError("User");
 
 		//find classroom
-		const classroomFound = req.customField.classroom;
+		const classroomFound = req.locals.classroom;
 
 		//check requested and not member
 		const member = classroomFound.classMembers.enrolledMembers.some(
@@ -743,18 +769,10 @@ module.exports.accept_request_get = async (req, res) => {
 	}
 };
 
-//requesting members
-module.exports.member_request_get = async (req, res) => {
-	await getMemberList(req, res, memberType.REQUESTING);
-};
+//////////////////////////////////////////////////////////////////////////////////////////
+////////                         		? DELETE		                              ////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
-//enrolled members
-module.exports.enrolled_members_get = async (req, res) => {
-	getMemberList(req, res, memberType.ENROLLED);
-};
-
-//delete
-// general fxn
 const removeMembers = async (req, res, membershipAction) => {
 	try {
 		// checke Logged in

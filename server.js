@@ -9,35 +9,37 @@ const socketio = require("socket.io"); //socket.io module
 const morgan = require("morgan"); // Morgan module for logging API request objects
 const cors = require("cors"); //CORS module for cross origin resource sharing i.e. between different ports in same ip
 
-//
-// MODULE IMPLEMENTATIONS ---------------------------------
-//
+//////////////////////////////////////////////////////////////////////////////////////
+//////////													! SERVER CONFIGS												//////////
+//////////////////////////////////////////////////////////////////////////////////////
 
 dotenv.config({ path: "./config/config.env" }); // loading environment variables
-
 connectDB(); // Database connection
-
 const app = express(); // Express app
 
-app.use(express.static(`${__dirname}/public/upload`));
-
+app.use("/public/upload", express.static("public/upload"));
 app.use(express.json()); // Middleware for parsing requests into JSON format and store in req.body
-
 if (process.env.NODE_ENV === "dev") app.use(morgan("dev")); // Logger for requests
-
 app.use(cors()); // Cross origin enabler
 
-// ROUTES ---
+//////////////////////////////////////////////////////////////////////////////////////
+//////////													! ROUTES																//////////
+//////////////////////////////////////////////////////////////////////////////////////
+
 const apiRouter = require("./api/routes/apiRoutes");
 app.use("/api", apiRouter); // (@param1: route, @param2 handler)
-// routes ---
 
-// SERVER ---
+//////////////////////////////////////////////////////////////////////////////////////
+//////////													! SERVER																//////////
+//////////////////////////////////////////////////////////////////////////////////////
+
 const PORT = process.env.PORT || process.argv[2] || 4000;
 const server = app.listen(PORT, "0.0.0.0", () => console.log(`Server running at ${PORT}.`));
-// server ---
 
-// SOCKETS ---
+//////////////////////////////////////////////////////////////////////////////////////
+//////////													! SOCKETS																//////////
+//////////////////////////////////////////////////////////////////////////////////////
+
 const io = socketio(server);
 //namespaces
 const text = io.of("/text");
