@@ -6,11 +6,11 @@ const User = require("../models/User");
 const { nonExistenceError, validationError } = require("../utils/errorMessages");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                         			! TODO methods			                              ////////////
+////////                               ! TODO methods                                    ////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? READ 			                              ////////////
+////////                             ? READ                                     ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 module.exports.get_todos_get = async (req, res) => {
@@ -46,7 +46,7 @@ module.exports.get_todo_detail_get = async (req, res) => {
 		//check user
 		const reqUser = req.user;
 
-		const todoFound = (await Todo.findOne({ _id: req.params.todoId })).toJSON();
+		const todoFound = await Todo.findOne({ _id: req.params.todoId });
 		if (!todoFound) throw nonExistenceError("todo");
 
 		return res.status(200).send({
@@ -64,7 +64,7 @@ module.exports.get_todo_detail_get = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? CREATE		                              ////////////
+////////                             ? CREATE                                  ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -102,7 +102,7 @@ module.exports.create_todo_post = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? UPDATE		                              ////////////
+////////                             ? UPDATE                                  ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 module.exports.update_todo_patch = async (req, res) => {
@@ -115,7 +115,7 @@ module.exports.update_todo_patch = async (req, res) => {
 		const reqUser = req.user;
 
 		// find todo
-		const todoToUpdate = (await Todo.findOne({ _id: req.params.todoId })).toJSON();
+		const todoToUpdate = await Todo.findOne({ _id: req.params.todoId });
 		if (!todoToUpdate) throw nonExistenceError("todo");
 
 		let updateQuery = { $set: {} };
@@ -142,7 +142,7 @@ module.exports.update_todo_patch = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? DELETE		                              ////////////
+////////                             ? DELETE                                  ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 module.exports.delete_todo_delete = async (req, res) => {

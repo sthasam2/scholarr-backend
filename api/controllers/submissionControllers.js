@@ -9,11 +9,11 @@ const {
 } = require("../utils/errorMessages");
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                         			! SUBMISSION methods	                              ////////////
+////////                               ! SUBMISSION methods                                ////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? READ 			                              ////////////
+////////                             ? READ                                     ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -72,7 +72,7 @@ module.exports.submission_detail_get = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? CREATE 			                            ////////////
+////////                             ? CREATE                                   ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -141,7 +141,7 @@ module.exports.submit_classwork_post = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? UPDATE 			                            ////////////
+////////                             ? UPDATE                                   ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 module.exports.update_classwork_submission_patch = async (req, res) => {
@@ -150,7 +150,7 @@ module.exports.update_classwork_submission_patch = async (req, res) => {
 		const reqUser = req.user;
 
 		//check submission
-		const paramsSubmission = (await Submission.findById(req.params.submissionId)).toJSON();
+		const paramsSubmission = await Submission.findById(req.params.submissionId);
 		if (!paramsSubmission) throw nonExistenceError("Submission");
 
 		if (paramsSubmission._userId.toString() != reqUser._id.toString())
@@ -200,7 +200,7 @@ module.exports.update_classwork_submission_patch = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? DELETE 			                            ////////////
+////////                             ? DELETE                                   ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 module.exports.delete_classwork_submission_delete = async (req, res) => {

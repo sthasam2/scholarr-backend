@@ -197,7 +197,7 @@ module.exports.classworkExistVerify = async (req, res, next) => {
 				},
 			};
 
-		req.locals.classwork = (await Classwork.findById(req.params.classworkId)).toJSON();
+		req.locals.classwork = await Classwork.findById(req.params.classworkId);
 
 		next();
 	} catch (err) {

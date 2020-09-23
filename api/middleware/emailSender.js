@@ -140,65 +140,65 @@ module.exports.emailVerifiedEmailSender = async (user) => {
 		html: `<html>
                 <head>
                 <style>
-				body {
-					font-family: "Muli", sans-serif;
-					font-size: 20px;
-				}
-	
-				p.custom {
-					line-height: 1.5;
-					text-align: left;
-					margin: 0 2rem;
-				}
-	
-				h1.custom {
-					font-family: "Libre Baskerville", serif;
-					font-size: 3em;
-					font-weight: bold;
-					text-align: center;
-				}
-	
-				div.container {
-					margin: 10vh 5vw;
-					padding: 1rem;
-					display: flex;
-					justify-content: center;
-				}
-	
-				div.custom {
-					padding: 35px;
-					display: grid;
-					border-style: solid;
-					border-color: #000000;
-					border-radius: 1em;
-					min-width: 80%;
-				}
-	
-				button.outline {
-					position: relative;
-					background: transparent;
-					color: black;
-					font-size: 14px;
-					border-color: black;
-					border-style: solid;
-					border-width: 3px;
-					border-radius: 10px;
-					padding: 10px 40px;
-					margin: 10px 0px;
-					text-transform: uppercase;
-					transition: all 0.2s linear;
-				}
-				button.outline:hover {
-					color: white;
-					background: black;
-					border-color: white;
-					transition: all 0.2s linear;
-				}
-	
-				button.outline:active {
-					border-radius: 22px;
-				}
-			</style>
+        body {
+          font-family: "Muli", sans-serif;
+          font-size: 20px;
+        }
+  
+        p.custom {
+          line-height: 1.5;
+          text-align: left;
+          margin: 0 2rem;
+        }
+  
+        h1.custom {
+          font-family: "Libre Baskerville", serif;
+          font-size: 3em;
+          font-weight: bold;
+          text-align: center;
+        }
+  
+        div.container {
+          margin: 10vh 5vw;
+          padding: 1rem;
+          display: flex;
+          justify-content: center;
+        }
+  
+        div.custom {
+          padding: 35px;
+          display: grid;
+          border-style: solid;
+          border-color: #000000;
+          border-radius: 1em;
+          min-width: 80%;
+        }
+  
+        button.outline {
+          position: relative;
+          background: transparent;
+          color: black;
+          font-size: 14px;
+          border-color: black;
+          border-style: solid;
+          border-width: 3px;
+          border-radius: 10px;
+          padding: 10px 40px;
+          margin: 10px 0px;
+          text-transform: uppercase;
+          transition: all 0.2s linear;
+        }
+        button.outline:hover {
+          color: white;
+          background: black;
+          border-color: white;
+          transition: all 0.2s linear;
+        }
+  
+        button.outline:active {
+          border-radius: 22px;
+        }
+      </style>
                 </head>
                 <body>
                     <link

@@ -83,80 +83,80 @@ describe("Test: POST /api/auth/register", () => {
 	});
 
 	// test("Error Res: Returns error", async (done) => {
-	// 	const res = await request(appurl)
-	// 		.post("/api/auth/register")
-	// 		.set("Accept", "application/json")
-	// 		.send({
-	// 			username: "sthasam2",
-	// 			email: "sthasuraj2@gmail.com",
-	// 			password: "[password]",
-	// 		});
-	// 	expect(res.status).toBe(400);
-	// 	expect(res.body).toMatchObject({
-	// 		error: { status: /number/, type: /string/, message: /string/ },
-	// 	});
-	// 	done();
+	//   const res = await request(appurl)
+	//     .post("/api/auth/register")
+	//     .set("Accept", "application/json")
+	//     .send({
+	//       username: "sthasam2",
+	//       email: "sthasuraj2@gmail.com",
+	//       password: "[password]",
+	//     });
+	//   expect(res.status).toBe(400);
+	//   expect(res.body).toMatchObject({
+	//     error: { status: /number/, type: /string/, message: /string/ },
+	//   });
+	//   done();
 	// });
 });
 
 // describe("Test: GET /api/auth/login", () => {
-// 	it("responds with json containing login POST req info", (done) => {
-// 		const res = request(appurl)
-// 			.get("/api/auth/login")
-// 			.expect(200)
-// 			.expect("Content-Type", /json/, done);
+//   it("responds with json containing login POST req info", (done) => {
+//     const res = request(appurl)
+//       .get("/api/auth/login")
+//       .expect(200)
+//       .expect("Content-Type", /json/, done);
 
-// 		// console.log(res.body);
-// 		// done();
-// 	});
+//     // console.log(res.body);
+//     // done();
+//   });
 // });
 
 // const auth_token = null;
 
 // describe("Test: POST /api/auth/login", () => {
-// 	it("responds with success json req.body login with headers", (done) => {
-// 		const res = request(appurl)
-// 			.post("/api/auth/login")
-// 			.set("Accept", "application/json")
-// 			.send({ email: "sthasuraj2@gmail.com", password: "[password]" })
-// 			.expect(
-// 				201,
-// 				{
-// 					success: {
-// 						status: 202,
-// 						type: "Successful Request",
-// 						message: "Login Successful",
-// 						auth_token: /some token/,
-// 					},
-// 				},
-// 				done
-// 			);
+//   it("responds with success json req.body login with headers", (done) => {
+//     const res = request(appurl)
+//       .post("/api/auth/login")
+//       .set("Accept", "application/json")
+//       .send({ email: "sthasuraj2@gmail.com", password: "[password]" })
+//       .expect(
+//         201,
+//         {
+//           success: {
+//             status: 202,
+//             type: "Successful Request",
+//             message: "Login Successful",
+//             auth_token: /some token/,
+//           },
+//         },
+//         done
+//       );
 
-// 		// console.log(res.body);
-// 		// TODO check errors req.body errors, validation errors
-// 	});
+//     // console.log(res.body);
+//     // TODO check errors req.body errors, validation errors
+//   });
 // });
 
 // // email verification
 
 // // resend email token
 // describe("Test: POST /api/auth/resend_confirmation", () => {
-// 	it("Resends a confirmation mail. Responds with res.body", (done) => {
-// 		const res = request(appurl)
-// 			.post("/api/auth/resend_confirmation")
-// 			.set("Accept", "application/json")
-// 			.send({ email: "sthasuraj2@gmail.com", password: "[password]" })
-// 			.expect(200, {
-// 				success: {
-// 					status: 200,
-// 					type: "Request successful",
-// 					message: "Email confirmation resent",
-// 				},
-// 			})
-// 			.end(done);
+//   it("Resends a confirmation mail. Responds with res.body", (done) => {
+//     const res = request(appurl)
+//       .post("/api/auth/resend_confirmation")
+//       .set("Accept", "application/json")
+//       .send({ email: "sthasuraj2@gmail.com", password: "[password]" })
+//       .expect(200, {
+//         success: {
+//           status: 200,
+//           type: "Request successful",
+//           message: "Email confirmation resent",
+//         },
+//       })
+//       .end(done);
 
-// 		// console.log(res.body);
-// 		// done();
-// 		// TODO check errors req.body errors, validation errors
-// 	});
+//     // console.log(res.body);
+//     // done();
+//     // TODO check errors req.body errors, validation errors
+//   });
 // });

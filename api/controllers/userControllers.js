@@ -10,11 +10,11 @@ const { wrongPwError, validationError, nonExistenceError } = require("../utils/e
 const { profileAvatarCoverDelete } = require("../utils/fileHandling");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                         			! USER methods			                              ////////////
+////////                               ! USER methods                                    ////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? READ	 			                            ////////////
+////////                             ? READ                                     ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /** ### Retrieve list of users
@@ -134,7 +134,7 @@ module.exports.user_detail_get = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? UPDATE 			                            ////////////
+////////                             ? UPDATE                                   ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /**  Controls PROFILE UPDATE PATCH requests.
@@ -146,7 +146,7 @@ module.exports.update_user_patch = async (req, res) => {
 		const { error } = await updateUserValidation(req.body);
 		if (error) throw validationError(error);
 
-		const userToUpdate = (await User.findOne({ _id: req.params.userId })).toJSON();
+		const userToUpdate = await User.findOne({ _id: req.params.userId });
 		if (!userToUpdate) throw nonExistenceError("user");
 
 		const validPass = await bcrypt.compare(req.body.password, userToUpdate.password);

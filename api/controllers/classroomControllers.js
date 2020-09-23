@@ -38,11 +38,11 @@ const membershipActionType = {
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                         			! CLASSROOM methods	                              ////////////
+////////                               ! CLASSROOM methods                                ////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? READ 			                              ////////////
+////////                             ? READ                                     ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 module.exports.classes_get = async (req, res) => {
@@ -150,7 +150,7 @@ module.exports.user_classes_get = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? CREATE		                              ////////////
+////////                             ? CREATE                                  ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /** ### CREATE classroom
@@ -209,7 +209,7 @@ module.exports.create_class_post = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? UPDATE 			                            ////////////
+////////                             ? UPDATE                                   ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /** ###  Update class details
@@ -248,7 +248,7 @@ module.exports.update_class_patch = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? DELETE		                              ////////////
+////////                             ? DELETE                                  ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /** ###  Delete classroom
@@ -304,11 +304,11 @@ module.exports.delete_class_delete = async (req, res) => {
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                         		! CLASSROOM MEMBER methods	                        ////////////
+////////                             ! CLASSROOM MEMBER methods                          ////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? READ 			                              ////////////
+////////                             ? READ                                     ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /** ### Get List of Members based on memberType
@@ -384,11 +384,11 @@ module.exports.enrolled_members_get = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? CREATE		                              ////////////
+////////                             ? CREATE                                  ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////
-////////                  		* INVITE                          ////////////
+////////                      * INVITE                          ////////////
 ////////////////////////////////////////////////////////////////////////////
 
 /** ### Invite bulk users to class
@@ -642,7 +642,7 @@ module.exports.accept_invite_get = async (req, res) => {
 };
 
 ////////////////////////////////////////////////////////////////////////////
-////////                  		* REQUEST                         ////////////
+////////                      * REQUEST                         ////////////
 ////////////////////////////////////////////////////////////////////////////
 
 //request via class code
@@ -655,9 +655,7 @@ module.exports.classroom_request_post = async (req, res) => {
 		if (error) throw validationError(error);
 
 		// check if classroom exists
-		const classroomFound = (
-			await Classroom.findOne({ classCode: req.body.classCode })
-		).toJSON();
+		const classroomFound = await Classroom.findOne({ classCode: req.body.classCode });
 		if (!classroomFound) throw nonExistenceError("classroom");
 
 		// if loggedIn
@@ -718,7 +716,7 @@ module.exports.classroom_request_post = async (req, res) => {
 module.exports.accept_request_get = async (req, res) => {
 	try {
 		//check user exists
-		const userToAccept = (await User.findById(req.params.userId)).toJSON();
+		const userToAccept = await User.findById(req.params.userId);
 		if (!userToAccept) throw nonExistenceError("User");
 
 		//find classroom
@@ -770,7 +768,7 @@ module.exports.accept_request_get = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                         		? DELETE		                              ////////////
+////////                             ? DELETE                                  ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 const removeMembers = async (req, res, membershipAction) => {
@@ -778,10 +776,10 @@ const removeMembers = async (req, res, membershipAction) => {
 		// checke Logged in
 		// let a = req.user;
 
-		const classroomToRemoveFrom = (await Classroom.findById(req.params.classroomId)).toJSON();
+		const classroomToRemoveFrom = await Classroom.findById(req.params.classroomId);
 		if (!classroomToRemoveFrom) throw nonExistenceError("classroom");
 
-		const memberToRemove = (await User.findById(req.params.userId)).toJSON();
+		const memberToRemove = await User.findById(req.params.userId);
 		if (!memberToRemove) throw nonExistenceError("user");
 
 		let a = memberToRemove._id.toString();

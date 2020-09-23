@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-////////														! USER PROFILE 																		////////////
+////////                            ! USER PROFILE                                     ////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -70,7 +70,7 @@ module.exports.imagesUpload = multer({
 ]);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//////////													! ATTACHMENTS 																		////////////
+//////////                          ! ATTACHMENTS                                     ////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -100,8 +100,8 @@ const classworkStorage = multer.diskStorage({
  * Destination: `./public/upload/classrooms/${classroomId}/classwork`
  *
  * Limits: {
- * 		filesize: 20MB,
- * 		filequantity: 6
+ *     filesize: 20MB,
+ *     filequantity: 6
  * }
  *
  * NOTE: Use after either classroomOwnerVerify or classMemberVerify middlewares
@@ -114,7 +114,7 @@ module.exports.attachmentsUpload = multer({
 }).array("attachments", 6);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//////////													! SUBMISSION 																		////////////
+//////////                          ! SUBMISSION                                     ////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -145,8 +145,8 @@ const submissionStorage = multer.diskStorage({
  * Destination: `./public/upload/classrooms/${classroomId}/classwork`
  *
  * Limits: {
- * 		filesize: 20MB,
- * 		filequantity: 3
+ *     filesize: 20MB,
+ *     filequantity: 3
  * }
  *
  * **NOTE: Use after either classroomOwnerVerify or classMemberVerify middlewares**

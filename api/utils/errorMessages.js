@@ -7,7 +7,7 @@
  * @returns {object}
  * ```javascript
  * {
- * 	error: { status: status, type: "type", message: "message" }
+ *   error: { status: status, type: "type", message: "message" }
  * }
  * ```
  */
@@ -28,7 +28,7 @@ module.exports.errorMessage = (status, type, message) => {
  * @returns {object}
  * ```javascript
  * {
- * 	error: { status:404, type:"Non-existence", message:"Requested `entity` does not exist." }
+ *   error: { status:404, type:"Non-existence", message:"Requested `entity` does not exist." }
  * }
  * ```
  */
@@ -49,7 +49,7 @@ module.exports.nonExistenceError = (entity) => {
  * @returns {object}
  * ```javascript
  * {
- *		error: { type: "Req.body Validation error", message: error.details[0].message },
+ *    error: { type: "Req.body Validation error", message: error.details[0].message },
  * }
  * ```
  */
