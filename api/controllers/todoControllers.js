@@ -121,7 +121,8 @@ module.exports.update_todo_patch = async (req, res) => {
 		let updateQuery = { $set: {} };
 
 		for (let key in req.body) {
-			if (todoToUpdate[key] === null) updateQuery.$set[key] = req.body[key];
+			if (key === "completed") updateQuery.$set[key] = req.body[key];
+			else if (todoToUpdate[key] === null) updateQuery.$set[key] = req.body[key];
 			else if (todoToUpdate[key] && todoToUpdate[key] !== req.body[key])
 				updateQuery.$set[key] = req.body[key];
 		}
