@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Classroom = require("./Classroom");
 const { ClassworkComment } = require("./Classwork");
 const Submission = require("./Submission");
+const Todo = require("./Todo");
 
 //
 //
@@ -45,6 +46,7 @@ const userSchema = mongoose.Schema(
 				submission: { type: mongoose.Schema.Types.ObjectId, ref: "Submission" },
 			},
 		],
+		todos: [{ type: mongoose.Schema.Types.ObjectId, ref: "Todo" }],
 	},
 	{ timestamps: true }
 );

@@ -45,7 +45,7 @@ module.exports.loggedInVerify = async (req, res, next) => {
  * @param {object} res the response object
  * @param {function} next the next middleware function
  */
-module.exports.accountOwnerVerify = async (req, res, next) => {
+module.exports.paramAccountOwnerVerify = async (req, res, next) => {
 	try {
 		// check LOGGED IN
 		if (!req.user._id) throw reqUserError;

@@ -8,21 +8,10 @@ const classroomRouter = require("express").Router();
 /**
  * ### Classroom Controller
  *  Middleware for handling different methodsaccept invited users to classroom @method POST @endpoint `api/classrooms/:classroomId/accept_invite/:userId` of Classroom
- *
- * #### Available Methods
- * - **Classroom CRUD**
- * 1. classes_get
- * 2. user_classes_get
- * 3. create_class_post
- * 4. class_detail_get
- * 5. update_class_patch
- * 6. class_delete
- *
- * - **Classroom member handling**
  */
 const classroomController = require("../controllers/classroomControllers");
 
-const { loggedInVerify, accountOwnerVerify } = require("../middleware/verification");
+const { loggedInVerify, paramAccountOwnerVerify } = require("../middleware/verification");
 const { classroomOwnerVerify, classMemberVerify } = require("../middleware/verification");
 // const { imagesUpload, fileUpload } = require("../middleware/fileUpload");
 
@@ -38,7 +27,7 @@ classroomRouter.get("/", loggedInVerify, classroomController.classes_get); //!
 classroomRouter.get(
 	"/user/:userId",
 	loggedInVerify,
-	accountOwnerVerify,
+	paramAccountOwnerVerify,
 	classroomController.user_classes_get
 ); //!!
 
@@ -69,7 +58,7 @@ classroomRouter.delete(
 ); //!! //!!
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                         			! CLASSROOM ROUTES	                              ////////////
+////////                         			! CLASSROOM MEMBER ROUTES                         ////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////

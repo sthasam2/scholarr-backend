@@ -9,10 +9,10 @@
        - [classroomControllers.js](api/controllers/classroomControllers.js)
        - [classworkControllers.js](api/controllers/classworkControllers.js)
        - [submissionControllers.js](api/controllers/submissionControllers.js)
+       - [todoControllers.js](api/controllers/todoControllers.js)
        - [userControllers.js](api/controllers/userControllers.js)
      - __middleware__
        - [classroomEmails.js](api/middleware/classroomEmails.js)
-       - [dbDocumentVerify.js](api/middleware/dbDocumentVerify.js)
        - [emailSender.js](api/middleware/emailSender.js)
        - [fileUpload.js](api/middleware/fileUpload.js)
        - [validation.js](api/middleware/validation.js)
@@ -21,6 +21,7 @@
        - [Classroom.js](api/models/Classroom.js)
        - [Classwork.js](api/models/Classwork.js)
        - [Submission.js](api/models/Submission.js)
+       - [Todo.js](api/models/Todo.js)
        - [Token.js](api/models/Token.js)
        - [User.js](api/models/User.js)
      - __routes__
@@ -28,6 +29,7 @@
        - [authRoutes.js](api/routes/authRoutes.js)
        - [classroomRoutes.js](api/routes/classroomRoutes.js)
        - [classworkRoutes.js](api/routes/classworkRoutes.js)
+       - [todoRoutes.js](api/routes/todoRoutes.js)
        - [userRoutes.js](api/routes/userRoutes.js)
      - __utils__
        - [codeTokensGenerator.js](api/utils/codeTokensGenerator.js)

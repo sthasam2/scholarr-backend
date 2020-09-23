@@ -1,10 +1,17 @@
 # SCHOLARR
 
-[![Version badge](https://img.shields.io/badge/Version-v.0.4.0-green.svg)](https://shields.io/) [![Version badge](https://img.shields.io/badge/Build-testing-red.svg)](https://shields.io/)
+[![Version badge](https://img.shields.io/badge/Version-v.0.4.1-green.svg)](https://shields.io/) [![Version badge](https://img.shields.io/badge/Build-testing-red.svg)](https://shields.io/)
 
 An online hub for **remote learning**.
 
 ## Changelogs
+
+-   ### v.0.4.1
+
+1. Added Todo Backend
+2. [Tested] Tested Todo endpoints
+3. Bug Fixes, Improvements
+4. Modifications
 
 -   ### v.0.4.0
 

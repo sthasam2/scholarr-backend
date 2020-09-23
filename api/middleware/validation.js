@@ -253,3 +253,29 @@ module.exports.updateSubmissionValidation = (data) => {
 	});
 	return schema.validate(data);
 };
+
+//
+//
+// TODO
+
+module.exports.createTodoValidation = (data) => {
+	const schema = Joi.object({
+		description: Joi.string().max(10000).required(),
+		responsible: Joi.string().max(500),
+		priority: Joi.string(),
+		completed: Joi.boolean(),
+		deadlineDate: Joi.date(),
+	});
+	return schema.validate(data);
+};
+
+module.exports.updateTodoValidation = (data) => {
+	const schema = Joi.object({
+		description: Joi.string().max(10000),
+		responsible: Joi.string().max(500),
+		priority: Joi.string(),
+		completed: Joi.boolean(),
+		deadlineDate: Joi.date(),
+	});
+	return schema.validate(data);
+};
