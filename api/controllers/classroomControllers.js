@@ -56,6 +56,7 @@ module.exports.classes_get = async (req, res) => {
 				classCode: doc.classCode,
 				className: doc.className,
 				classDescription: doc.classDescription,
+				affiliatedInstitution: doc.affiliatedInstitution,
 			});
 		}
 
@@ -81,6 +82,7 @@ module.exports.class_detail_get = async (req, res) => {
 		else if (req.locals.reqUser.isMember)
 			classroom = {
 				_id: classroomFound._id,
+				affiliatedInstitution: classroomFound.affiliatedInstitution,
 				createdAt: classroomFound.createdAt,
 				updatedAt: classroomFound.updatedAt,
 				className: classroomFound.className,
@@ -96,6 +98,7 @@ module.exports.class_detail_get = async (req, res) => {
 				className: classroomFound.className,
 				classDescription: classroomFound.classDescription,
 				classCode: classroomFound.classCode,
+				affiliatedInstitution: classroomFound.affiliatedInstitution,
 			};
 
 		return res.status(200).send(classroom);

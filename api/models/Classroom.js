@@ -27,11 +27,11 @@ const classroomSchema = mongoose.Schema(
 			maxlength: 256,
 			default: null,
 		},
-		// affiliatedInstitution: {
-		//   type: String,
-		//   maxlength: 256,
-		//   default: null,
-		// },
+		affiliatedInstitution: {
+			type: String,
+			maxlength: 256,
+			default: null,
+		},
 		coverPhoto: {
 			type: String,
 			default: null,
