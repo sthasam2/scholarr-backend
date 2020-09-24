@@ -127,6 +127,7 @@ module.exports.user_classes_get = async (req, res) => {
 			attending.push({
 				_creatorId: doc._creatorId,
 				_classId: doc._id,
+				affiliatedInstitution: doc.affiliatedInstitution,
 				classCode: doc.classCode,
 				className: doc.className,
 				classDescription: doc.classDescription,
