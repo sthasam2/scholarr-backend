@@ -232,6 +232,7 @@ module.exports.updateQuestionCWValidation = (data) => {
 	const schema = Joi.object({
 		title: Joi.string(),
 		description: Joi.string(),
+		totalGrade: Joi.number().min(0).max(100),
 		deadlineDate: Joi.date(),
 	});
 	return schema.validate(data);
