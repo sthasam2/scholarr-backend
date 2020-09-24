@@ -184,10 +184,11 @@ module.exports.classworkExistVerify = async (req, res, next) => {
 		}
 
 		//check logged in user is the owner or member of classroom
-		let classworkExists = classroomFound.classworks.some(
+		let classworkExistsInClass = classroomFound.classworks.some(
 			(doc) => doc._classworkId.toString() === req.params.classworkId
 		);
-		if (!classworkExists)
+		const classworkFound = await Classwork.findById(req.params.classworkId);
+		if (!classworkExistsInClass && !classworkFound)
 			throw {
 				error: {
 					status: 400,
@@ -197,7 +198,7 @@ module.exports.classworkExistVerify = async (req, res, next) => {
 				},
 			};
 
-		req.locals.classwork = await Classwork.findById(req.params.classworkId);
+		req.locals.classwork = classworkFound.toJSON();
 
 		next();
 	} catch (err) {

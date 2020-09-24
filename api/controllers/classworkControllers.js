@@ -400,7 +400,7 @@ module.exports.delete_classwork_delete = async (req, res) => {
 			{ $pull: { "classworks.classwork": reqClasswork._id } }
 		);
 
-		await attachmentsDelete(reqClasswork.assignments);
+		await attachmentsDelete(reqClasswork.attachments);
 
 		return res.status(200).send({
 			success: {
