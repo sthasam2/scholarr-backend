@@ -185,6 +185,7 @@ module.exports.questionCWValidation = (data) => {
 	const schema = Joi.object({
 		title: Joi.string().required(),
 		description: Joi.string(),
+		totalGrade: Joi.number().min(0).max(100).required(),
 		deadlineDate: Joi.date().required(),
 	});
 	return schema.validate(data);

@@ -10,11 +10,11 @@ const { wrongPwError, validationError, nonExistenceError } = require("../utils/e
 const { profileAvatarCoverDelete } = require("../utils/fileHandling");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                               ! USER methods                                    ////////////
+////////                               ! USER methods                                   ////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                             ? READ                                     ////////////
+////////                             ? READ                                   ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /** ### Retrieve list of users
@@ -28,7 +28,9 @@ module.exports.users_get = async (req, res) => {
 				_id: doc._id,
 				username: doc.username,
 				email: doc.email,
-				displayName: `${doc.firstName} ${doc.lastName}`,
+				firstName: doc.firstName,
+				middleName: doc.middleName,
+				lastName: doc.lastName,
 				dateOfBirth: doc.dateOfBirth,
 				bio: doc.bio,
 				avatarImage: doc.avatarImage,
@@ -65,7 +67,9 @@ module.exports.group_users_post = async (req, res) => {
 				_id: doc._id,
 				username: doc.username,
 				email: doc.email,
-				displayName: `${doc.firstName} ${doc.lastName}`,
+				firstName: doc.firstName,
+				middleName: doc.middleName,
+				lastName: doc.lastName,
 				dateOfBirth: doc.dateOfBirth,
 				bio: doc.bio,
 				avatarImage: doc.avatarImage,
@@ -134,7 +138,7 @@ module.exports.user_detail_get = async (req, res) => {
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
-////////                             ? UPDATE                                   ////////////
+////////                             ? UPDATE                                  ////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /**  Controls PROFILE UPDATE PATCH requests.
@@ -188,6 +192,7 @@ module.exports.update_user_patch = async (req, res) => {
 			Success: {
 				status: 200,
 				message: "Profile successfully updated",
+				_userId: userToUpdate._id,
 			},
 		});
 	} catch (err) {

@@ -6,6 +6,11 @@ An online hub for **remote learning**.
 
 ## Changelogs
 
+-   ### v.0.4.1.2
+
+1. Bug Fixes
+2. Modifications
+
 -   ### v.0.4.1.1
 
 1. Bug Fixes
