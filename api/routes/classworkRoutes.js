@@ -8,7 +8,7 @@ const classworkRouter = require("express").Router();
 const classworkController = require("../controllers/classworkControllers");
 const submissionController = require("../controllers/submissionControllers");
 const { attachmentsUpload, submissionUpload } = require("../middleware/fileUpload");
-const { loggedInVerify } = require("../middleware/verification");
+const { loggedInVerify, paramAccountOwnerVerify } = require("../middleware/verification");
 const {
 	classroomOwnerVerify,
 	classMemberVerify,
@@ -168,16 +168,22 @@ classworkRouter.get(
 	loggedInVerify,
 	classroomOwnerVerify,
 	classworkExistVerify,
-	attachmentsUpload,
-
 	submissionController.submissions_get
 ); //!
+
+/** get user submissions @method GET @endpoint `api/classrooms/:classroomId/classworks/:classworkId/submission/user/:userIds`*/
+classworkRouter.get(
+	"/classworks/submissions/user/:userId",
+	loggedInVerify,
+	paramAccountOwnerVerify,
+	submissionController.user_submissions_get
+);
 
 /** get submission detail @method GET @endpoint `api/classrooms/:classroomId/classworks/:classworkId/submissions/detail/:submissionId`*/
 classworkRouter.get(
 	"/:classroomId/classworks/:classworkId/submissions/detail/:submissionId",
 	loggedInVerify,
-	classroomOwnerVerify,
+	classMemberVerify,
 	classworkExistVerify,
 	submissionController.submission_detail_get
 ); //!

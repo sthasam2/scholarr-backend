@@ -24,16 +24,20 @@ module.exports.submissions_get = async (req, res) => {
 	try {
 		// before this check LoggedIn, ClassroomMember, ClassworkExist
 		const reqClasswork = req.locals.classwork;
-		let submissions = reqClasswork.submissions;
+		let submissions = [];
 
-		delete reqClasswork.submissions;
+		for (let doc of reqClasswork.submissions) submissions.push(doc.submission.toString());
+
+		const submissionsFound = await Submission.find({ _id: { $in: submissions } });
+
+		// delete reqClasswork.submissions;
 		return res.status(200).send({
 			success: {
 				status: 200,
 				type: "Request Successful!",
 				message: "Submission recieved for classwork",
 				classwork: reqClasswork,
-				submissions: submissions,
+				submissions: submissionsFound,
 			},
 		});
 	} catch (err) {
@@ -65,6 +69,41 @@ module.exports.submission_detail_get = async (req, res) => {
 				submission: paramsSubmission,
 			},
 		});
+	} catch (err) {
+		if (process.env.NODE_ENV === "dev") console.error(err);
+		return res.status(400).send(err);
+	}
+};
+
+module.exports.user_submissions_get = async (req, res) => {
+	try {
+		const reqUser = req.user;
+		const submissions = reqUser.submissions;
+
+		let errorDocs = [];
+		let submissionDocs = [];
+
+		for (let doc of submissions) {
+			let classworkFound = await Classwork.findById(doc.classwork);
+			let submissionFound = await Submission.findById(doc.submission);
+			if (!classworkFound && !submissionFound) errorDocs.push(doc);
+			else {
+				submissionDocs.push({
+					classwork: classworkFound,
+					submission: submissionFound,
+				});
+			}
+		}
+
+		return res.status(200).send({
+			success: {
+				status: 200,
+				type: "Request Successful!",
+				message: "Submission obtained.",
+				submission: submissionDocs,
+			},
+		});
+		//
 	} catch (err) {
 		if (process.env.NODE_ENV === "dev") console.error(err);
 		return res.status(400).send(err);
@@ -153,8 +192,9 @@ module.exports.update_classwork_submission_patch = async (req, res) => {
 		const paramsSubmission = await Submission.findById(req.params.submissionId);
 		if (!paramsSubmission) throw nonExistenceError("Submission");
 
-		if (paramsSubmission._userId.toString() != reqUser._id.toString())
-			throw ownerAccessDenailError;
+		let isOwner = paramsSubmission._userId.toString() === reqUser._id.toString();
+		let isClassroomOwner = reqClassroom._creatorId.toString() === reqUser._id.toString();
+		if (!isOwner && !isClassroomOwner) throw ownerAccessDenailError;
 
 		// Validate req.body
 		const { error } = createSubmissionValidation(req.body);

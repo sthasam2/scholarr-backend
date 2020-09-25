@@ -1,10 +1,16 @@
 # SCHOLARR
 
-[![Version badge](https://img.shields.io/badge/Version-v.0.4.1-green.svg)](https://shields.io/) [![Version badge](https://img.shields.io/badge/Build-testing-red.svg)](https://shields.io/)
+[![Version badge](https://img.shields.io/badge/Version-v.0.4.-green.svg)](https://shields.io/) [![Version badge](https://img.shields.io/badge/Build-testing-red.svg)](https://shields.io/)
 
 An online hub for **remote learning**.
 
 ## Changelogs
+
+-   ### v.0.4.2
+
+1. Added User Submission endpoint
+2. Modifications
+3. Bug Fixes
 
 -   ### v.0.4.1.2
 
