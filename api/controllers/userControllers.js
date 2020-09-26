@@ -160,16 +160,20 @@ module.exports.update_user_patch = async (req, res) => {
 		let updateQuery = { $set: {} };
 
 		if (req.files) {
-			updateQuery.$set["avatarImage"] = {
-				name: req.files.avatar[0].filename,
-				mimeType: req.files.avatar[0].mimetype,
-				location: req.files.avatar[0].path,
-			};
-			updateQuery.$set["coverImage"] = {
-				name: req.files.cover[0].filename,
-				mimeType: req.files.cover[0].mimetype,
-				location: req.files.cover[0].path,
-			};
+			if (req.files.avatar) {
+				updateQuery.$set["avatarImage"] = {
+					name: req.files.avatar[0].filename,
+					mimeType: req.files.avatar[0].mimetype,
+					location: req.files.avatar[0].path,
+				};
+			}
+			if (req.files.cover) {
+				updateQuery.$set["coverImage"] = {
+					name: req.files.cover[0].filename,
+					mimeType: req.files.cover[0].mimetype,
+					location: req.files.cover[0].path,
+				};
+			}
 		}
 
 		for (let key in req.body) {
