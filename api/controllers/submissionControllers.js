@@ -1,7 +1,11 @@
 const { Classwork } = require("../models/Classwork");
 const User = require("../models/User");
 const Submission = require("../models/Submission");
-const { createSubmissionValidation } = require("../middleware/validation");
+const {
+	createSubmissionValidation,
+	updateSubmissionValidation,
+	updateSubmissionGradeValidation,
+} = require("../middleware/validation");
 const {
 	validationError,
 	nonExistenceError,
@@ -197,7 +201,7 @@ module.exports.update_classwork_submission_patch = async (req, res) => {
 		if (!isOwner && !isClassroomOwner) throw ownerAccessDenailError;
 
 		// Validate req.body
-		const { error } = createSubmissionValidation(req.body);
+		const { error } = updateSubmissionValidation(req.body);
 		if (error) throw validationError(error);
 
 		// UPDATE data
@@ -224,6 +228,41 @@ module.exports.update_classwork_submission_patch = async (req, res) => {
 
 		//delete previous files
 		await attachmentsDelete(paramsSubmission.attachments);
+
+		return res.status(200).send({
+			success: {
+				status: 200,
+				type: "Request Successful!",
+				message: "Submission updated",
+				submissionId: paramsSubmission._id,
+			},
+		});
+	} catch (err) {
+		if (process.env.NODE_ENV === "dev") console.error(err);
+		return res.status(400).send(err);
+	}
+};
+
+module.exports.update_grade_submission_patch = async (req, res) => {
+	try {
+		// before this check LoggedIn, ClassroomMember, ClassworkExist
+		const reqUser = req.user;
+
+		//check submission
+		const paramsSubmission = await Submission.findById(req.params.submissionId);
+		if (!paramsSubmission) throw nonExistenceError("Submission");
+
+		// Validate req.body
+		const { error } = updateSubmissionGradeValidation(req.body);
+		if (error) throw validationError(error);
+
+		// UPDATE data
+		let updateQuery = { $set: {} };
+		updateQuery.$set["feedback"] = req.body.feedback;
+		updateQuery.$set["obtainedGrade"] = req.body.obtainedGrade;
+
+		// Update Users, Classwork
+		await Submission.updateOne({ _id: paramsSubmission._id }, updateQuery);
 
 		return res.status(200).send({
 			success: {

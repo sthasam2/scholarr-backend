@@ -256,6 +256,14 @@ module.exports.updateSubmissionValidation = (data) => {
 	return schema.validate(data);
 };
 
+module.exports.updateSubmissionGradeValidation = (data) => {
+	const schema = Joi.object({
+		feedback: Joi.string().max(1000),
+		obtainedGrade: Joi.number().max(100).required(),
+	});
+	return schema.validate(data);
+};
+
 //
 //
 // TODO

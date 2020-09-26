@@ -206,7 +206,7 @@ classworkRouter.post(
 //////////                             ? UPDATE                             ///////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-/** update classwork @method PATCH @endpoint `api/classrooms//:classroomId/classworks/:classworkId/update_submission/:submissionId`*/
+/** update submission @method PATCH @endpoint `api/classrooms//:classroomId/classworks/:classworkId/update_submission/:submissionId`*/
 classworkRouter.patch(
 	"/:classroomId/classworks/:classworkId/update_submission/:submissionId",
 	loggedInVerify,
@@ -215,6 +215,15 @@ classworkRouter.patch(
 	submissionUpload,
 	submissionController.update_classwork_submission_patch
 ); //!
+
+/** update submission GRADE @method PATCH @endpoint `api/classrooms//:classroomId/classworks/:classworkId/grade_submission/:submissionId`*/
+classworkRouter.patch(
+	"/:classroomId/classworks/:classworkId/grade_submission/:submissionId",
+	loggedInVerify,
+	classroomOwnerVerify,
+	classworkExistVerify,
+	submissionController.update_grade_submission_patch
+);
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //////////                             ? DELETE                             ///////////
