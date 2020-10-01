@@ -6,7 +6,7 @@ const connectDB = require("./config/db"); // Mongoose module for integrating Mon
 const socketio = require("socket.io"); //socket.io module
 
 // DEV-DEPENDENCIES
-const morgan = require("morgan"); // Morgan module for logging API request objects
+// const morgan = require("morgan"); // Morgan module for logging API request objects
 const cors = require("cors"); //CORS module for cross origin resource sharing i.e. between different ports in same ip
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,9 @@ app.use("/api", apiRouter); // (@param1: route, @param2 handler)
 //////////////////////////////////////////////////////////////////////////////////////
 
 const PORT = process.env.PORT || process.argv[2] || 4000;
-const server = app.listen(PORT, "0.0.0.0", () => console.log(`Server running at ${PORT}.`));
+const server = app.listen(PORT, "0.0.0.0", () =>
+  console.log(`Server running at ${PORT}.`)
+);
 
 //////////////////////////////////////////////////////////////////////////////////////
 //////////                          ! SOCKETS                                //////////
@@ -47,11 +49,11 @@ const video = io.of("/video");
 
 // connection handlers
 text.on("connection", (socket) =>
-	console.log(`Socket connection made. Namespace:Chat, ID: ${socket.id}`)
+  console.log(`Socket connection made. Namespace:Chat, ID: ${socket.id}`)
 );
 
 video.on("connection", (socket) =>
-	console.log(`Socket connection made. Namespace:VideoChat, ID: ${socket.id}`)
+  console.log(`Socket connection made. Namespace:VideoChat, ID: ${socket.id}`)
 );
 // sockets ---
 
