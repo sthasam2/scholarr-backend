@@ -157,7 +157,7 @@ module.exports.submit_classwork_post = async (req, res) => {
 		// Update Users, Classwork
 		await Classwork.updateOne(
 			{ _id: reqClasswork._id },
-			{ $set: { submissions: { user: reqUser._id, submission: savedSubmission._id } } }
+			{ $push: { submissions: { user: reqUser._id, submission: savedSubmission._id } } }
 		);
 
 		await User.updateOne(
